@@ -25,7 +25,7 @@ if (-e "/nas02/home/m/b/mbergins/bin/rsync") {
 	$rsync_command = "/nas02/home/m/b/mbergins/bin/rsync";
 }
 
-my $command = "$time_str" . "$rsync_command $progress_str" . "-a --exclude data.stor ../../results/Invado_count/* $opt{server}:~/Documents/Projects/invadopodia/results/Invado_count/";
+my $command = "$time_str" . "$rsync_command $progress_str" . "-a --exclude data.stor ../../results/Invado_count/* $opt{server}:~/Documents/Projects/invado_population/results/Invado_count/";
 if ($opt{server} eq "NOSERVER" || $opt{debug}) {
     print "$command\n";
 } else {
