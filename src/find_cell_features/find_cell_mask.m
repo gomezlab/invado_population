@@ -66,12 +66,12 @@ for i_num = 1:size(image_dirs)
     connected_areas = filter_mask(threshed_mask, puncta_image, i_p);
     threshed_mask = connected_areas > 0;
     
-    if (not(isempty(prior_connected_areas)))
-        connected_areas = filter_on_overlap(puncta_image,connected_areas,prior_connected_areas);
-        threshed_mask = connected_areas > 0;
-        connected_areas = filter_mask(threshed_mask, puncta_image, i_p);
-        threshed_mask = connected_areas > 0;
-    end
+%     if (not(isempty(prior_connected_areas)))
+%         connected_areas = filter_on_overlap(puncta_image,connected_areas,prior_connected_areas);
+%         threshed_mask = connected_areas > 0;
+%         connected_areas = filter_mask(threshed_mask, puncta_image, i_p);
+%         threshed_mask = connected_areas > 0;
+%     end
     
     connected_perims = zeros(size(connected_areas));
     for i=1:max(connected_areas(:))
