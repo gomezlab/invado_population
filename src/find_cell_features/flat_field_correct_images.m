@@ -55,9 +55,7 @@ for j=1:length(fields)
     % Gel Correction
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
     gel_flat_field = double(imread(fullfile(base_dir,image_dirs(1).name,filenames.gel_median)));
-    gel_flat_mean = mean(gel_flat_field(:));
     gel_flat_field = gel_flat_field - mean(gel_flat_field(:));
-    gel_flat_field = gel_flat_field - (gel_flat_mean - 650);
     for i = 1:size(image_dirs)
         if (exist(fullfile(base_dir,image_dirs(i).name,['uncorrected_', filenames.gel]),'file'))
             continue;
