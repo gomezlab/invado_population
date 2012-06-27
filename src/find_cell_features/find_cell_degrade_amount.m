@@ -99,7 +99,7 @@ for cell_num = 1:length(cell_hit_counts)
         first_intensity = nanmean(first_data.gel_image_trunc(cell_extent));
         diffs(cell_num) = 100*(nanmean(diff_vals)/first_intensity);
         corrected_diffs(cell_num) = 100*(nanmean(diff_vals)/first_intensity) - ...
-            100*(nanmean(surrounding_diff_pixels)/first_intensity);
+            100*(nanmean(surrounding_diff_pixels)/first_intensity);        
     end
 end
 

@@ -70,6 +70,9 @@ for i_num=1:length(all_tracking_props)
         
         [sorted_sims, sorted_indexes] = sort(pix_sims,'descend');
         
+        %for a match to be made, the pixel similarity must be above 20% and
+        %either similarity list be empty or this match be greater than 80%
+        %of the next best pixel sim
         if (sorted_sims(1) > 0.2 && (length(sorted_sims) == 1 || (sorted_sims(1)*0.8) > sorted_sims(2)))
             all_tracking_props{i_num}(obj_num).next_obj = sorted_indexes(1);
         else

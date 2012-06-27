@@ -66,12 +66,12 @@ for i_num = 1:size(image_dirs)
     connected_areas = filter_mask(threshed_mask, puncta_image, i_p);
     threshed_mask = connected_areas > 0;
     
-%     if (not(isempty(prior_connected_areas)))
-%         connected_areas = filter_on_overlap(puncta_image,connected_areas,prior_connected_areas);
-%         threshed_mask = connected_areas > 0;
-%         connected_areas = filter_mask(threshed_mask, puncta_image, i_p);
-%         threshed_mask = connected_areas > 0;
-%     end
+    if (not(isempty(prior_connected_areas)))
+        connected_areas = filter_on_overlap(puncta_image,connected_areas,prior_connected_areas);
+        threshed_mask = connected_areas > 0;
+        connected_areas = filter_mask(threshed_mask, puncta_image, i_p);
+        threshed_mask = connected_areas > 0;
+    end
     
     connected_perims = zeros(size(connected_areas));
     for i=1:max(connected_areas(:))
@@ -183,7 +183,8 @@ for i=1:max(connected_areas(:))
     seeds_props = regionprops(seeds_labeled,'Area'); %#ok<MRPBW>
     seeds_labeled = bwlabel(ismember(seeds_labeled, find([seeds_props.Area] > 10)),8);
     seeds = seeds_labeled > 0;
-    
+    seeds = bwmorph(seeds,'shrink',Inf);
+        
     if (max(seeds_labeled(:)) <= 1)
         final_connected_areas(this_cell) = max(final_connected_areas(:)) + 1;
     else
