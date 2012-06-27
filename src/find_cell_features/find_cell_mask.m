@@ -10,7 +10,7 @@ i_p.addRequired('exp_dir',@(x)exist(x,'dir') == 7);
 
 i_p.addParamValue('min_cell_area',1500,@isnumeric);
 i_p.addParamValue('max_cell_area',20000,@isnumeric);
-i_p.addParamValue('min_cell_intensity',60,@isnumeric);
+i_p.addParamValue('min_cell_intensity',0,@isnumeric);
 i_p.addParamValue('debug',0,@(x)x == 1 || x == 0);
 
 i_p.parse(exp_dir,varargin{:});
@@ -62,14 +62,19 @@ for i_num = 1:size(image_dirs)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Mask Cleanup
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    connected_areas = filter_mask(threshed_mask, puncta_image, i_p);
-    threshed_mask = connected_areas > 0;
-    
     if (not(isempty(prior_connected_areas)))
-        connected_areas = filter_on_overlap(puncta_image,connected_areas,prior_connected_areas);
+        connected_areas = filter_mask(threshed_mask, puncta_image, ...
+            i_p.Results.min_cell_area,Inf,i_p.Results.min_cell_intensity);
+        
+        connected_areas = filter_on_overlap(puncta_image,connected_areas,prior_connected_areas,...
+            i_p.Results.min_cell_area);
         threshed_mask = connected_areas > 0;
-        connected_areas = filter_mask(threshed_mask, puncta_image, i_p);
+        connected_areas = filter_mask(threshed_mask, puncta_image, ...
+            i_p.Results.min_cell_area,i_p.Results.max_cell_area,i_p.Results.min_cell_intensity);
+        threshed_mask = connected_areas > 0;
+    else
+        connected_areas = filter_mask(threshed_mask, puncta_image, ...
+            i_p.Results.min_cell_area,i_p.Results.max_cell_area,i_p.Results.min_cell_intensity);
         threshed_mask = connected_areas > 0;
     end
     
@@ -81,7 +86,7 @@ for i_num = 1:size(image_dirs)
         
         connected_perims(temp) = i;
     end
-        
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Output Image Creation/Writing
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -155,23 +160,25 @@ end
 
 thresh = intensity(imin(min_index));
 
-function connected_areas = filter_mask(threshed_mask, puncta_image, i_p)
+function connected_areas = filter_mask(threshed_mask, puncta_image, ...
+    min_cell_area,max_cell_area,min_cell_intensity)
 
 threshed_mask = imfill(threshed_mask,'holes');
 
-connected_areas = bwlabel(threshed_mask,8);
+connected_areas = bwlabel(threshed_mask,4);
 region_props = regionprops(connected_areas,puncta_image, 'Area','MeanIntensity'); %#ok<MRPBW>
 
-size_filter = [region_props.Area] > i_p.Results.min_cell_area & ...
-    [region_props.Area] < i_p.Results.max_cell_area;
+size_filter = [region_props.Area] > min_cell_area & ...
+    [region_props.Area] < max_cell_area;
 
-intensity_filter = [region_props.MeanIntensity] > i_p.Results.min_cell_intensity;
+intensity_filter = [region_props.MeanIntensity] > min_cell_intensity;
 
 threshed_mask = ismember(connected_areas, find(size_filter & intensity_filter));
 
-connected_areas = bwlabel(threshed_mask,8);
+connected_areas = bwlabel(threshed_mask,4);
 
-function final_connected_areas = filter_on_overlap(puncta_image,connected_areas,prior_connected_areas)
+
+function final_connected_areas = filter_on_overlap(puncta_image,connected_areas,prior_connected_areas,min_seed_size)
 
 final_connected_areas = zeros(size(puncta_image));
 
@@ -181,10 +188,10 @@ for i=1:max(connected_areas(:))
     seeds = prior_connected_areas > 0 & this_cell;
     seeds_labeled = bwlabel(seeds,8);
     seeds_props = regionprops(seeds_labeled,'Area'); %#ok<MRPBW>
-    seeds_labeled = bwlabel(ismember(seeds_labeled, find([seeds_props.Area] > 10)),8);
+    seeds_labeled = bwlabel(ismember(seeds_labeled, find([seeds_props.Area] > min_seed_size)),8);
     seeds = seeds_labeled > 0;
-    seeds = bwmorph(seeds,'shrink',Inf);
-        
+%     seeds = bwmorph(seeds,'shrink',Inf);
+    
     if (max(seeds_labeled(:)) <= 1)
         final_connected_areas(this_cell) = max(final_connected_areas(:)) + 1;
     else
