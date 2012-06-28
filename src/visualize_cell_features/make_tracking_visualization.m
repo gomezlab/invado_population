@@ -61,6 +61,17 @@ for i_num = 1:length(image_dirs)
     
 	if (not(convert_avail)), continue; end
     props = regionprops(current_data.labeled_cells,'Centroid');
+    
+    i_size = size(highlighted_puncta);
+    for i=1:length(props)
+        if (props(i).Centroid(1) > i_size(2)*0.95)
+            props(i).Centroid(1) = i_size(2)*0.95;
+        end
+        if (props(i).Centroid(2) > i_size(1)*0.95)
+            props(i).Centroid(2) = i_size(1)*0.95;
+        end
+    end
+    
     all_annotate = '';
     for i = 1:length(ad_nums)
         pos_str = ['+',num2str(props(ad_nums(i)).Centroid(1)),'+',num2str(props(ad_nums(i)).Centroid(2))];
