@@ -1,4 +1,12 @@
 function perim_thick = thicken_perimeter(perims,objects,varargin)
+%THICKEN_PERIMETER    Thicken a provided set of perimeters
+%
+%   thick_perims = thicken_perimeter(thin_perims,objects) thickens the
+%   perimeters in thin_perims to 3 pixels, where the thickening is only
+%   allowed within the matching object provided in objects
+%
+%   Options:
+%       -3rd argument: thickeness of perimeter, defaults to 3
 
 if (islogical(perims)), perims = double(perims); end
 if (islogical(objects)), objects = double(objects); end
