@@ -36,7 +36,7 @@ image_dirs = image_dirs(3:end);
 load(fullfile(base_dir,image_dirs(1).name,filenames.tracking_raw));
 
 %fill in the possible linked objects based on the number of values in the
-%centroid
+%area
 for i_num=1:length(all_tracking_props) %#ok<NODEF>
     area = [all_tracking_props{i_num}.Area];
     
@@ -46,7 +46,7 @@ for i_num=1:length(all_tracking_props) %#ok<NODEF>
     try
         pix_sim = reshape([all_tracking_props{i_num}.Pix_sim],[],size(area,2));
         for i=1:size(area,2)
-            all_tracking_props{i_num}(i).next_obj = 1:size(pix_sim,1);
+            all_tracking_props{i_num}(i).next_obj = [];
         end
     catch
         continue;
@@ -54,31 +54,35 @@ for i_num=1:length(all_tracking_props) %#ok<NODEF>
 end
 
 %filter the tracking props on the pixel similary measure
-for i_num=1:length(all_tracking_props)
-    for obj_num=1:size(all_tracking_props{i_num},1)
-        %check for the number of next objects, if the value is zero, or
-        %doesn't exist, skip to the next object
-        try
-            if (size(all_tracking_props{i_num}(obj_num).next_obj,2) == 0)
-                continue;
-            end
-        catch
-            continue;
-        end
-        
-        pix_sims = all_tracking_props{i_num}(obj_num).Pix_sim;
-        
-        [sorted_sims, sorted_indexes] = sort(pix_sims,'descend');
-        
-        %for a match to be made, the pixel similarity must be above 20% and
-        %either similarity list be empty or this match be greater than 80%
-        %of the next best pixel sim
-        if (sorted_sims(1) > 0.2 && (length(sorted_sims) == 1 || (sorted_sims(1)*0.8) > sorted_sims(2)))
-            all_tracking_props{i_num}(obj_num).next_obj = sorted_indexes(1);
-        else
-            all_tracking_props{i_num}(obj_num).next_obj = [];
+for i_num=1:(length(all_tracking_props)-1)
+    pix_sim = reshape([all_tracking_props{i_num}.Pix_sim],[],length(all_tracking_props{i_num}))';
+    
+    high_pix_sim = pix_sim > 0.5;
+    
+    [start_cell_hits, end_cell_hits] = find(high_pix_sim);
+    
+    for i = 1:length(start_cell_hits)
+        start_cell = start_cell_hits(i);
+        end_cell = end_cell_hits(i);
+        if (sum(start_cell == start_cell_hits) == 1 && ...
+                sum(end_cell == end_cell_hits) == 1)            
+            
+            all_tracking_props{i_num}(start_cell).next_obj = end_cell;
+            
+            pix_sim(start_cell,:) = NaN;
+            pix_sim(end_cell,:) = NaN;
         end
     end
+    
+    while (any(any(pix_sim > 0.2)))
+        [start_cell,end_cell] = find(pix_sim == max(pix_sim(:)),1,'first');
+        
+        all_tracking_props{i_num}(start_cell).next_obj = end_cell;
+        
+        pix_sim(start_cell,:) = NaN;
+        pix_sim(end_cell,:) = NaN;
+        
+    end    
 end
 
 %detect conflicts in pixel similarity assignment
@@ -101,8 +105,15 @@ output_file = fullfile(base_dir, image_dirs(1).name,filenames.tracking);
 if (any(size(tracking_mat) == 0))
     
 else
+    for track_col = 1:size(tracking_mat,2)
+        track_nums = sort(unique(tracking_mat(:,1)+1));
+        if (track_nums(1) == 0), track_nums = track_nums(2:end); end
+        
+        assert(length(track_nums) == track_nums(end));
+    end
+    
     if (not(exist(fileparts(output_file),'dir'))), mkdir(fileparts(output_file)); end
-
+    
     csvwrite(fullfile(base_dir, image_dirs(1).name,filenames.tracking),tracking_mat);
 end
 
@@ -122,9 +133,6 @@ while (i_num ~= 0 && obj_num ~= 0)
         cells(tracking_num).start = i_num;
     end
     
-    if (i_num == 1)
-        1;
-    end
     cells(tracking_num).sequence = [cells(tracking_num).sequence, obj_num];
     all_tracking_props{i_num}(obj_num).assigned = 1;
     
