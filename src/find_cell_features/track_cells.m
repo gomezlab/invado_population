@@ -59,7 +59,7 @@ for i_num=1:(length(all_tracking_props)-1)
     %if Pix_sim isn't present there either aren't any cells in the current
     %image or there aren't any in the next image, either way, we don't need
     %to do any tracking, jump to next image
-    if (isempty(strmatch(fieldnames(all_tracking_props{5}),'Pix_sim')))
+    if (isempty(strcmp(fieldnames(all_tracking_props{i_num}),'Pix_sim')))
         continue;
     end
     
