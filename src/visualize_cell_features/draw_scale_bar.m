@@ -10,6 +10,7 @@ function image_with_bar = draw_scale_bar(image_no_bar,pixel_size,varargin)
 %       -bar_size: default 10 microns, desired bar_size in microns
 %       -position_code: default 2, lower right hand corner, desired scale
 %        bar position in the image, codes follow:
+%       -bar_height: default to 1% of image height
 %
 %   Position Codes:
 %       -1: Upper right hand corner
@@ -28,6 +29,7 @@ i_p.addRequired('image_no_bar',@(x)isnumeric(x));
 i_p.addRequired('pixel_size',@(x)isnumeric(x) && x > 0);
 
 i_p.addParamValue('bar_size',10,@(x)isnumeric(x) && x > 0);
+i_p.addParamValue('bar_height',1,@(x)isnumeric(x) && x > 0);
 i_p.addParamValue('position_code',2,@(x)isnumeric(x) && x > 0 && x < 4);
 i_p.addParamValue('bar_color',1,@(x)isnumeric(x) && x >= 0 && x <=1 );
 i_p.addParamValue('debug',0,@(x)x == 1 || x == 0);
@@ -48,7 +50,7 @@ offset_standard = 0.02;
 [image_height image_width image_depth] = size(image_no_bar);
 
 bar_width = round(bar_size/pixel_size);
-bar_height = round(0.01*image_height);
+bar_height = round(i_p.Results.bar_height/100*image_height);
 if (bar_height < 2)
     bar_height = 2;
 end
