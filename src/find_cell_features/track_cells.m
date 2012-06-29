@@ -42,7 +42,7 @@ for i_num=1:length(all_tracking_props) %#ok<NODEF>
     %this variable will be used when filling out the tracking matrix
     for i=1:size(area,2)
         all_tracking_props{i_num}(i).assigned = 0;
-		all_tracking_props{i_num}(i).next_obj = [];
+        all_tracking_props{i_num}(i).next_obj = [];
     end
 end
 
@@ -65,14 +65,15 @@ for i_num=1:(length(all_tracking_props)-1)
         start_cell = start_cell_hits(i);
         end_cell = end_cell_hits(i);
         if (sum(start_cell == start_cell_hits) == 1 && ...
-                sum(end_cell == end_cell_hits) == 1)            
+                sum(end_cell == end_cell_hits) == 1)
             
             all_tracking_props{i_num}(start_cell).next_obj = end_cell;
             
             pix_sim(start_cell,:) = NaN;
-            pix_sim(end_cell,:) = NaN;
+            pix_sim(:,end_cell) = NaN;
         end
     end
+    
     
     while (any(any(pix_sim > 0.2)))
         [start_cell,end_cell] = find(pix_sim == max(pix_sim(:)),1,'first');
@@ -82,7 +83,7 @@ for i_num=1:(length(all_tracking_props)-1)
         pix_sim(start_cell,:) = NaN;
         pix_sim(end_cell,:) = NaN;
         
-    end    
+    end
 end
 
 %detect conflicts in pixel similarity assignment
