@@ -35,22 +35,14 @@ image_dirs = image_dirs(3:end);
 
 load(fullfile(base_dir,image_dirs(1).name,filenames.tracking_raw));
 
-%fill in the possible linked objects based on the number of values in the
-%area
+%fill in place holder values
 for i_num=1:length(all_tracking_props) %#ok<NODEF>
     area = [all_tracking_props{i_num}.Area];
     
     %this variable will be used when filling out the tracking matrix
     for i=1:size(area,2)
         all_tracking_props{i_num}(i).assigned = 0;
-    end
-    try
-        pix_sim = reshape([all_tracking_props{i_num}.Pix_sim],[],size(area,2));
-        for i=1:size(area,2)
-            all_tracking_props{i_num}(i).next_obj = [];
-        end
-    catch
-        continue;
+		all_tracking_props{i_num}(i).next_obj = [];
     end
 end
 
@@ -59,7 +51,7 @@ for i_num=1:(length(all_tracking_props)-1)
     %if Pix_sim isn't present there either aren't any cells in the current
     %image or there aren't any in the next image, either way, we don't need
     %to do any tracking, jump to next image
-    if (isempty(strcmp(fieldnames(all_tracking_props{i_num}),'Pix_sim')))
+    if (not(any(strcmp(fieldnames(all_tracking_props{i_num}),'Pix_sim'))))
         continue;
     end
     
