@@ -81,7 +81,7 @@ for i_num=1:(length(all_tracking_props)-1)
         all_tracking_props{i_num}(start_cell).next_obj = end_cell;
         
         pix_sim(start_cell,:) = NaN;
-        pix_sim(end_cell,:) = NaN;
+        pix_sim(:,end_cell) = NaN;
         
     end
 end
