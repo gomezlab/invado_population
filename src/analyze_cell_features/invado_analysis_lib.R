@@ -55,7 +55,6 @@ get_row_cumprods <- function(files,min.lifetime=0) {
 }
 
 process_gel_diff_percents <- function(files,min.lifetime=0) {
-
     results = list()
 
     for (this_file in files) {
@@ -195,5 +194,76 @@ plot_multiple_exp_mat <- function(time,exps,exp_confs,cols=NA,exp_names=NA,...) 
 }
 
 ################################################################################
-# Main Program
+# Data Loading
 ################################################################################
+
+read_overall_results_files <- function(overall_dir) {
+    files = Sys.glob(file.path(overall_dir,'*'))
+    
+    data = list()
+    for (i in files) {
+        prop_name = sub('.csv','',basename(i));
+
+        data[[prop_name]] = as.matrix(read.csv(i,header=F));
+    }
+    return(data)
+}
+
+find_degrade_percent <- function(overall_data,max.final=0,max.diff.percent=0,max.gel.minus=0,
+                                 corrected.max.final=0) {
+    
+    diff.percent.degrade = !is.nan(overall_data$diff_percents) & 
+        overall_data$diff_percents < max.diff.percent;
+    gel.minus.degrade = !is.nan(overall_data$gel_minus_surrounding) & 
+        overall_data$gel_minus_surrounding < max.gel.minus;
+    
+    final.degrade = !is.nan(overall_data$final_diff) & overall_data$final_diff < max.final;
+    final.degrade = final.degrade[,rep(1,dim(diff.percent.degrade)[[2]])]
+    
+    corrected.final.degrade = !is.nan(overall_data$corrected_final_diff) & 
+        overall_data$corrected_final_diff < corrected.max.final;
+    corrected.final.degrade = corrected.final.degrade[,rep(1,dim(diff.percent.degrade)[[2]])]
+
+    active_degrade = diff.percent.degrade & gel.minus.degrade & final.degrade & 
+        corrected.final.degrade;
+    
+    has_degraded = active_degrade;
+    for (row_num in 1:dim(has_degraded)[[1]]) {
+        degrade_times = which(has_degraded[row_num,]);
+        if (length(degrade_times) == 0) {
+            next;
+        } else {
+            has_degraded[row_num,degrade_times[1]:dim(has_degraded)[[2]]] = T
+        }
+    }
+    
+    degrade_percent = colSums(has_degraded)/dim(has_degraded)[[1]];
+
+    return(degrade_percent)
+}
+
+find_average_degrade_percents <- function(data_sets,...) {
+    these_percents = c();
+    for (i in 1:length(data_sets)) {
+        this_degrade_percent = find_degrade_percent(data_sets[[i]],...);
+        these_percents = rbind(these_percents,this_degrade_percent)
+    }
+
+    return(colMeans(these_percents))
+}
+
+find_rmsd <- function(data_sets,...) {
+    control_percents = find_average_degrade_percents(data_sets$control,...)
+    BB94_percents = find_average_degrade_percents(data_sets$BB94,...)
+    DMSO_percents = find_average_degrade_percents(data_sets$DMSO,...)
+    
+    rmsd = list();
+    rmsd$overall = sqrt(mean((control_percents - BB94_percents)**2));
+    rmsd$DMSO = sqrt(mean((control_percents - DMSO_percents)**2));
+    rmsd$BB94_zero = sqrt(mean(BB94_percents**2));
+    rmsd$BB94_final = tail(BB94_percents,1);
+    rmsd$final_diff = tail(control_percents,1) - tail(BB94_percents,1);
+    rmsd$DMSO_diff = tail(control_percents,1) - tail(DMSO_percents,1);
+
+    return(rmsd)
+}

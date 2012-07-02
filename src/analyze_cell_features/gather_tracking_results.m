@@ -37,7 +37,7 @@ if (not(exist(tracking_file,'file')))
     disp('No tracking matrix found, assuming no cells in field');
     return;
 else
-    tracking_mat = csvread(tracking_file)+1;
+    tracking_mat = csvread(tracking_file);
 end
 
 load(fullfile(base_dir, image_dirs(1).name,filenames.cell_props));
