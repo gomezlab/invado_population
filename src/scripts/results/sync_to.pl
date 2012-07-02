@@ -33,7 +33,7 @@ if ($opt{exclude}) {
 }
 
 my $command = "$time_str $rsync_command $progress_str $exclude_str " . 
-	"-a --exclude data.stor ../../results/Invado_count/* " .
+	"-a ../../results/Invado_count/* " .
 	"$opt{server}:~/Documents/Projects/invado_population/results/Invado_count/";
 if ($opt{server} eq "NOSERVER" || $opt{debug}) {
     print "$command\n";
