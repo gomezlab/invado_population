@@ -122,7 +122,7 @@ process_data.active_degrade = not(isnan(raw_data.gel_diff_minus)) & raw_data.gel
 disp(['Detected ', num2str(sum(process_data.active_degrade(:))), ' invasion events.']);
 % disp(['Bonferroni Corrected p-value threshold: ', num2str(0.05/bonferroni_correction)]);
 
-process_data.live_cells = raw_data.tracking > -1;
+process_data.live_cells = raw_data.tracking > 0;
 process_data.longevities = sum(process_data.live_cells,2)/2;
 
 process_data.ever_degrade = [];
