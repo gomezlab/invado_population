@@ -96,17 +96,19 @@ end
 % Normalize Composite Images
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-all_pix_vals = sort(all_pix_vals);
+% all_pix_vals = sort(all_pix_vals);
 %we only need to do image normalization if the images are not already in
 %color (i.e. have more than 2 dimensions)
 if (ndims(images_composite{1}) < 3)
     %toss out the top 0.05% of pixels for the image min/max creation
-    end_trim_amount = round(length(all_pix_vals)*0.0005);
-    images_min_max = double([all_pix_vals(1), all_pix_vals(end-end_trim_amount)]);
+%     end_trim_amount = round(length(all_pix_vals)*0.01);
+%     images_min_max = double([all_pix_vals(1), all_pix_vals(end-end_trim_amount)]);
+    images_min_max = quantile(double(all_pix_vals),[0.005,1-0.005]);
     for i=1:length(images_composite)
         %scale and then truncate the composite images
         images_composite{i} = (double(images_composite{i}) - images_min_max(1))/range(images_min_max);
-        images_composite{i}(images_composite{i} > images_min_max(2)) = images_min_max(2);
+        images_composite{i}(images_composite{i} > 1) = 1;
+        images_composite{i}(images_composite{i} < 0) = 0;
     end
 end
 

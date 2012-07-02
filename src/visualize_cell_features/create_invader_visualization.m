@@ -34,7 +34,7 @@ if (not(exist(tracking_file,'file')))
     tracking_mat = zeros(size(image_dirs,1),1);
     active_degrade = zeros(size(image_dirs,1),1);
 else
-    tracking_mat = csvread(tracking_file)+1;
+    tracking_mat = csvread(tracking_file);
     active_degrade = csvread(fullfile(field_dir,'cell_props','active_degrade.csv'));
     
     data_sets_to_read = {'Cell_gel_diff','Cell_gel_diff_median','Cell_gel_diff_p_val','Area' ...

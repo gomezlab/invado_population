@@ -29,7 +29,7 @@ image_dirs = image_dirs(3:end);
 
 filenames = add_filenames_to_struct(struct());
 
-tracking_seq = csvread(fullfile(base_dir,image_dirs(1).name,filenames.tracking)) + 1;
+tracking_seq = csvread(fullfile(base_dir,image_dirs(1).name,filenames.tracking));
 if (isempty(tracking_seq))
     tracking_seq = zeros(1,max_image_num);
 end

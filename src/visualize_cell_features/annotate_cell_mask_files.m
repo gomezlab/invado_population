@@ -35,7 +35,7 @@ for i = 1:length(data_sets_to_read)
     raw_data.(data_sets_to_read{i}) = csvread(fullfile(data_dir,[data_sets_to_read{i}, '.csv']));
 end
 
-tracking_mat = csvread(fullfile(base_dir, image_dirs(1).name,filenames.tracking))+1;
+tracking_mat = csvread(fullfile(base_dir, image_dirs(1).name,filenames.tracking));
 %occastionally, there will be fields were no cells were detected, in that
 %case, the tracking matrix is an empty file, but we still need a matrix to
 %index into, so make an empty tracking matrix with a line of zeros
