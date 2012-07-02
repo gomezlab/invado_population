@@ -77,7 +77,7 @@ my @run_only_once = qw(find_median_images flat_field_correct_images
 
 my @skip_check = qw(find_median_images find_exp_min_max
 	find_full_exp_degrade_percents collect_montage_visualizations
-	gather_tracking_results create_invader_visualization find_invading_cells
+	gather_tracking_results find_invading_cells track_cells
 	build_single_cell_montage flat_field_correct_images find_cell_degrade_amount);
 
 my $cfg_suffix = basename($opt{cfg});
