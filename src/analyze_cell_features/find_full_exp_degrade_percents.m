@@ -114,7 +114,7 @@ end
 
 processed_data = struct();
 
-processed_data.live_cells = raw_data.tracking > -1;
+processed_data.live_cells = raw_data.tracking > 0;
 processed_data.live_cells_per_image = sum(processed_data.live_cells);
 
 processed_data.ever_degrade = [];
