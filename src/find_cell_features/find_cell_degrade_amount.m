@@ -39,7 +39,7 @@ if (not(exist(tracking_file,'file')))
     disp('No tracking matrix found, assuming no cells in field');
     return;
 else
-    tracking_mat = csvread(tracking_file)+1;
+    tracking_mat = csvread(tracking_file);
 end
 first_data = read_in_file_set(fullfile(base_dir,image_dirs(1).name),filenames);
 first_data.gel_image_trunc = first_data.gel_image;
