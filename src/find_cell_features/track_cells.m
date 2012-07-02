@@ -33,7 +33,7 @@ assert(str2num(image_dirs(3).name) == 1, 'Error: expected the third string to be
 
 image_dirs = image_dirs(3:end);
 
-load(fullfile(base_dir,image_dirs(1).name,filenames.tracking_raw));
+load(fullfile(base_dir,image_dirs(1).name,filenames.tracking_raw),'all_tracking_props');
 
 %fill in place holder values
 for i_num=1:length(all_tracking_props) %#ok<NODEF>
@@ -41,8 +41,8 @@ for i_num=1:length(all_tracking_props) %#ok<NODEF>
     
     %this variable will be used when filling out the tracking matrix
     for i=1:size(area,2)
-        all_tracking_props{i_num}(i).assigned = 0;
-        all_tracking_props{i_num}(i).next_obj = [];
+        all_tracking_props{i_num}(i).assigned = 0; %#ok<AGROW>
+        all_tracking_props{i_num}(i).next_obj = []; %#ok<AGROW>
     end
 end
 
@@ -55,30 +55,39 @@ for i_num=1:(length(all_tracking_props)-1)
         continue;
     end
     
+    %this reshape gives the pixel similarity with all the starting cells in
+    %the rows and ending cells in the columns
     pix_sim = reshape([all_tracking_props{i_num}.Pix_sim],[],length(all_tracking_props{i_num}))';
     
-    high_pix_sim = pix_sim > 0.5;
-    
-    [start_cell_hits, end_cell_hits] = find(high_pix_sim);
-    
+    %Start by searching for reciprical high pixel similarity matches,
+    %defined as those cells that overlap a single cell in the next frame by
+    %50% or more
+    [start_cell_hits, end_cell_hits] = find(pix_sim > 0.5);    
     for i = 1:length(start_cell_hits)
         start_cell = start_cell_hits(i);
         end_cell = end_cell_hits(i);
+        
+        %check to make sure these two cells are unique in their lists, if
+        %so, make the connection and block the row (start cell) and column
+        %(end cell)
         if (sum(start_cell == start_cell_hits) == 1 && ...
-                sum(end_cell == end_cell_hits) == 1)
+            sum(end_cell == end_cell_hits) == 1)
             
-            all_tracking_props{i_num}(start_cell).next_obj = end_cell;
+            all_tracking_props{i_num}(start_cell).next_obj = end_cell; %#ok<AGROW>
             
             pix_sim(start_cell,:) = NaN;
             pix_sim(:,end_cell) = NaN;
         end
     end
     
-    
+    %This loop finds any remaining pixel similarity measures above 20% and
+    %matches them, one-by-one to their corresponding end cell. This code
+    %mostly helps clear out the cells that overlap two objects with fairly
+    %high similarity, but not one single object completely.
     while (any(any(pix_sim > 0.2)))
         [start_cell,end_cell] = find(pix_sim == max(pix_sim(:)),1,'first');
         
-        all_tracking_props{i_num}(start_cell).next_obj = end_cell;
+        all_tracking_props{i_num}(start_cell).next_obj = end_cell; %#ok<AGROW>
         
         pix_sim(start_cell,:) = NaN;
         pix_sim(:,end_cell) = NaN;
@@ -86,31 +95,20 @@ for i_num=1:(length(all_tracking_props)-1)
     end
 end
 
-%detect conflicts in pixel similarity assignment
-for i_num=1:length(all_tracking_props)
-    try
-        predicted_next_objs = [all_tracking_props{i_num}.next_obj];
-    catch %#ok<*CTCH>
-        continue;
-    end
-    
-    assert(length(predicted_next_objs) >= length(unique(predicted_next_objs)))
-end
-
-tracking_mat = convert_tracking_props_to_matrix(all_tracking_props) - 1;
+tracking_mat = convert_tracking_props_to_matrix(all_tracking_props);
 
 output_file = fullfile(base_dir, image_dirs(1).name,filenames.tracking);
 
 %If the tracking matrix is empty, don't output anything and don't make a
 %folder for the empty matrix
-if (any(size(tracking_mat) == 0))
-    
-else
-    for track_col = 1:size(tracking_mat,2)
-        track_nums = sort(unique(tracking_mat(:,1)+1));
-        if (track_nums(1) == 0), track_nums = track_nums(2:end); end
-        
-        assert(isempty(track_nums) || length(track_nums) == track_nums(end));
+if (not(any(size(tracking_mat) == 0)))
+    %check each column of the tracking matrix to make sure each cell number
+    %occurs once and only once per column
+    for col_num = 1:size(tracking_mat,2)
+        all_tracking_nums = sort(tracking_mat(:,col_num));
+        for cell_num = 1:max(all_tracking_nums)
+            assert(sum(all_tracking_nums == cell_num) == 1);
+        end
     end
     
     if (not(exist(fileparts(output_file),'dir'))), mkdir(fileparts(output_file)); end
