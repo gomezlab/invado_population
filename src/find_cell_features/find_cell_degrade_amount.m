@@ -8,6 +8,7 @@ i_p = inputParser;
 
 i_p.addRequired('exp_dir',@(x)exist(x,'dir') == 7);
 
+i_p.addParamValue('gelatin_min_value',382,@(x)isnumeric(x) && x > 0)
 i_p.addParamValue('debug',0,@(x)x == 1 || x == 0);
 
 i_p.parse(exp_dir,varargin{:});
@@ -96,7 +97,7 @@ for cell_num = 1:length(cell_hit_counts)
         diffs(cell_num) = NaN;
         corrected_diffs(cell_num) = NaN;
     else
-        first_intensity = nanmean(first_data.gel_image_trunc(cell_extent));
+        first_intensity = nanmean(first_data.gel_image_trunc(cell_extent)) - i_p.Results.gelatin_min_value;
         diffs(cell_num) = 100*(nanmean(diff_vals)/first_intensity);
         corrected_diffs(cell_num) = 100*(nanmean(diff_vals)/first_intensity) - ...
             100*(nanmean(surrounding_diff_pixels)/first_intensity);        
