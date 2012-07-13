@@ -55,7 +55,7 @@ my @overall_command_seq = (
 	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script flat_field_correct_images" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_exp_min_max" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_field.pl -script find_cell_mask" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_field.pl -script apply_bleaching_correction" ], ],
+	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script apply_bleaching_correction" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_exp_min_max" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_field.pl -script find_cell_mask_properties" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_field.pl -script track_cells" ], ],
