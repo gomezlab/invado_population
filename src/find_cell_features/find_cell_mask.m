@@ -35,16 +35,20 @@ assert(str2num(image_dirs(3).name) == 1, 'Error: expected the third string to be
 
 image_dirs = image_dirs(3:end);
 
+pixel_values = [];
+for i_num = 1:size(image_dirs)
+    puncta_image = double(imread(fullfile(base_dir,image_dirs(i_num).name,filenames.puncta)));
+    pixel_values = [pixel_values, puncta_image(:)];
+end
+thresh = find_mask_threshold(pixel_values,i_p);
+
 for i_num = 1:size(image_dirs)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % reading in current image
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
     puncta_image = double(imread(fullfile(base_dir,image_dirs(i_num).name,filenames.puncta)));
     puncta_range = csvread(fullfile(base_dir,image_dirs(i_num).name,filenames.puncta_range));
     normalized_image = (puncta_image - puncta_range(2,1))/range(puncta_range(2,:));
-    
-    pixel_values = puncta_image(:);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % reading in prior connected areas
@@ -55,8 +59,6 @@ for i_num = 1:size(image_dirs)
         prior_connected_areas = double(imread(fullfile(base_dir,image_dirs(i_num-1).name,filenames.labeled_cell_mask)));
         1;
     end
-    
-    thresh = find_mask_threshold(pixel_values,i_p);
     threshed_mask = puncta_image > thresh;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
