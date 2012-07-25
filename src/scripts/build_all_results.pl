@@ -54,12 +54,12 @@ my @overall_command_seq = (
 	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_median_images" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script flat_field_correct_images" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_exp_min_max" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_field.pl -script find_cell_mask" ], ],
+	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_cell_mask_experiment" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script apply_bleaching_correction" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_exp_min_max" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_field.pl -script find_cell_mask_properties" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_field.pl -script track_cells" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_field.pl -script find_cell_degrade_amount" ], ],
+	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_cell_mask_properties_experiment" ], ],
+	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script track_cells_experiment" ], ],
+	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_cell_degrade_amount" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_field.pl -script ../analyze_cell_features/gather_tracking_results" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_field.pl -script ../analyze_cell_features/find_invading_cells" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script ../analyze_cell_features/find_full_exp_degrade_percents" ], ],
@@ -71,9 +71,10 @@ my @overall_command_seq = (
 
 #some of the scripts only need to be run once for each experiment, this will
 #rely on being able to find an experiment with "time_series_01" in its filename
-my @run_only_once = qw(find_median_images flat_field_correct_images
-	find_exp_min_max find_full_exp_degrade_percents collect_montage_visualizations
-	build_all_montage_file_sets find_cell_mask_experiment);
+my @run_only_once = qw(run_matlab_over_experiment);
+# my @run_only_once = qw(find_median_images flat_field_correct_images
+# 	find_exp_min_max find_full_exp_degrade_percents collect_montage_visualizations
+# 	build_all_montage_file_sets find_cell_mask_experiment);
 
 my @skip_check = qw(find_median_images find_exp_min_max
 	find_full_exp_degrade_percents collect_montage_visualizations
