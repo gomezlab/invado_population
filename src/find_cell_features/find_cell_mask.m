@@ -41,6 +41,7 @@ for i_num = 1:size(image_dirs)
     pixel_values = [pixel_values, puncta_image(:)];
 end
 thresh = find_mask_threshold(pixel_values,i_p);
+disp(['Found threshold of ', num2str(thresh)]);
 
 for i_num = 1:size(image_dirs)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
