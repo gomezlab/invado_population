@@ -42,7 +42,7 @@ for i=1:length(fields)
     %cells in this field, return from the function
     if (not(exist(tracking_file,'file')))
         disp('No tracking matrix found, assuming no cells in field');
-        return;
+        continue;
     else
         tracking_mat = csvread(tracking_file);
     end
