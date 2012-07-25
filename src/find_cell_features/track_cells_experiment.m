@@ -26,7 +26,6 @@ for i=1:length(fields)
     catch %#ok<CTCH>
         disp(['Problem with ', fullfile(base_dir,fields(i).name)]);
     end
-        
 end
 
 toc(start);
