@@ -72,14 +72,12 @@ my @overall_command_seq = (
 #some of the scripts only need to be run once for each experiment, this will
 #rely on being able to find an experiment with "time_series_01" in its filename
 my @run_only_once = qw(run_matlab_over_experiment);
-# my @run_only_once = qw(find_median_images flat_field_correct_images
-# 	find_exp_min_max find_full_exp_degrade_percents collect_montage_visualizations
-# 	build_all_montage_file_sets find_cell_mask_experiment);
 
 my @skip_check = qw(find_median_images find_exp_min_max
 	find_full_exp_degrade_percents collect_montage_visualizations
 	gather_tracking_results find_invading_cells track_cells
-	build_single_cell_montage flat_field_correct_images find_cell_degrade_amount);
+	build_single_cell_montage flat_field_correct_images
+	find_cell_degrade_amount);
 
 my $cfg_suffix = basename($opt{cfg});
 $cfg_suffix =~ s/.*\.(.*)/$1/;
@@ -200,7 +198,6 @@ sub execute_command_seq {
 			print "Done submitting: " if $executed_scripts_count == 1;
             
 			if ($opt{debug}) {
-				# print "Working in directory: $dir\n";
                 print $config_command, "\n";
             } else {
                 $return_code = system($config_command);
