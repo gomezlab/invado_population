@@ -30,7 +30,8 @@ files.tracking = fullfile(field_dir,'tracking_matrices','tracking_seq.csv');
 %check for the tracking file first, if absent, no cells were found, return
 %from the function with a message, but no error
 if (not(exist(files.tracking,'file')))
-    disp('No tracking matrix found, assuming no cells in field');
+    disp('No tracking matrix found, assuming no cells in field.');
+    disp('Searched in: ',files.tracking);
     return;
 end
 
