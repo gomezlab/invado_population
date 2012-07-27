@@ -49,13 +49,13 @@ for i=1:length(fields)
     
     gel_range = csvread(fullfile(image_dir,image_dirs(1).name,filenames.gel_range));
     
-    first_gel_image = imread(fullfile(image_dir,image_dirs(1).name,filenames.gel));
+    first_gel_image = double(imread(fullfile(image_dir,image_dirs(1).name,filenames.gel)));
     first_gel_image_trunc = first_gel_image;
     outside_range = first_gel_image > gel_range(2,2);
     first_gel_image_trunc(outside_range) = NaN;
     
     
-    final_gel_image = imread(fullfile(image_dir,image_dirs(end).name,filenames.gel));
+    final_gel_image = double(imread(fullfile(image_dir,image_dirs(end).name,filenames.gel)));
     final_gel_image_trunc = final_gel_image;
     outside_range = final_gel_image > gel_range(2,2);
     final_gel_image_trunc(outside_range) = NaN;
@@ -108,6 +108,7 @@ for i=1:length(fields)
             corrected_diffs(cell_num) = 100*(nanmean(diff_vals)/first_intensity) - ...
                 100*(nanmean(surrounding_diff_pixels)/first_intensity);
         end
+        1;
     end
     
     csvwrite(fullfile(image_dir,image_dirs(1).name,filenames.final_gel_diffs),diffs);
