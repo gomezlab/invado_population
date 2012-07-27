@@ -77,8 +77,8 @@ for i_num = 1:size(image_dirs,1)
         
         %use 3 for short lived cells, without regard for the degradation
         %status
-        long_lived = longevity(this_tracking_row) >= 10;        
-        if (not(long_lived))
+        short_lived = longevity(this_tracking_row) < 10;        
+        if (short_lived)
             degrade_marked(current_data.labeled_cells_perim == cell_num) = 3;
         end
         
