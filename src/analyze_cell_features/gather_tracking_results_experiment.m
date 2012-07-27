@@ -10,7 +10,7 @@ i_p.addParamValue('debug',0,@(x)x == 1 || x == 0);
 
 i_p.parse(base_dir,varargin{:});
 
-addpath('matlab_scripts');
+addpath(genpath('..'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Main Program
