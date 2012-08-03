@@ -9,7 +9,7 @@ use File::Basename;
 use File::Spec::Functions;
 use File::Copy;
 use File::Temp;
-use POSIX;
+# use POSIX;
 use CGI;
 use CGI::Carp;
 use IO::Handle;
@@ -17,6 +17,16 @@ use Config::General;
 use Cwd;
 
 $| = 1;
+
+my $output_folder = "/var/www/metamorph_grid/";
+my $webserver = "http://snotra.bme.unc.edu/metamorph_grid/";
+
+if (! -e $output_folder) {
+	mkpath($output_folder);
+	open OUTPUT, ">$output_folder/index.html" or die "$!";
+	print OUTPUT &print_auto_redirection_html();
+	close OUTPUT;
+}
 
 ###############################################################################
 #Main
@@ -37,7 +47,6 @@ if (defined $q->param('dish_count')) {
     print $q->textfield('dish_count',$q->param('dish_count'),10,10);
 } else {
     print $q->textfield('dish_count','',10,10);
-          #$q->textfield(-onChange=>"does_this_work()",-name=>'dish_count');
 }
 
 print $q->h2('Stage Position File (optional)'),
@@ -63,41 +72,35 @@ print $q->end_form;
 my $lightweight_fh = $q->upload('uploaded_file');
 # undef may be returned if it's not a valid file handle
 if (defined $lightweight_fh) {
-
-    # Upgrade the handle to one compatible with IO::Handle:
+    
+	# Upgrade the handle to one compatible with IO::Handle:
     my $io_handle = $lightweight_fh->handle();
     $q->param('uploaded_file') =~ /(.*)/;
     
-    my ($output_handle, $output_file) = File::Temp::tempfile(DIR=>catdir('temp_files'));
+	mkpath(catdir($output_folder,'temp_files'));
+    my ($output_handle, $output_file) = File::Temp::tempfile(DIR=>catdir($output_folder,'temp_files')) or die $!;
     
-    my $data_read = 0;
     my $buffer;
     while (my $bytesread = $io_handle->read($buffer,1024)) {
         print $output_handle $buffer or die;
-        $data_read++;
-        if ($data_read % (1024*5) == 0) {
-            #print $data_read/1024, " megs read in so far.";
-            #print $q->br;
-        }
     }
     close $output_handle;
     chmod 0666, "$output_file" or die "$!";
     
     my $dish_count = $q->param('dish_count');
 
-    system("./make_metamorph_grid_file.pl -output_prefix '/Users/mbergins/Sites/metamorph_grid_files/' -dish_count $dish_count -corners $output_file");
+    system("./make_metamorph_grid_file.pl -output_prefix '$output_folder' -dish_count $dish_count -corners $output_file");
     
     print $q->p;
-    print "<a href=http://balder.bme.unc.edu/~mbergins/metamorph_grid_files/final_stage_positions.STG>Click here to download the complete file.</a>";
+    print "<a href=$webserver/final_stage_positions.STG>Click here to download the complete file.</a>";
 
 } elsif (defined $q->param('dish_count')) {
-
     my $dish_count = $q->param('dish_count');
-    
-    system("./make_metamorph_grid_file.pl -output_prefix '/Users/mbergins/Sites/metamorph_grid_files/' -dish_count $dish_count");
+ 	
+    system("./make_metamorph_grid_file.pl -output_prefix '$output_folder' -dish_count $dish_count");
     
     print $q->p;
-    print "<a href=http://balder.bme.unc.edu/~mbergins/metamorph_grid_files/stage_corners.STG>Click here to download the unfocused corner file.</a>";
+    print "<a href=$webserver/stage_corners.STG>Click here to download the unfocused corner file.</a>";
 }
 
 &print_out_instructions();
@@ -128,4 +131,17 @@ sub print_out_instructions {
     print $q->h2('Dish Count');
 
     print "The number of dishes in the experiment. The first dish will be in position 1, so if you want to run a 4 dish experiment, make sure that positions 1-4 are filled in the microscope.";
+}
+
+sub print_auto_redirection_html {
+	return "<!DOCTYPE html>
+	<html>
+	<head>
+	<meta http-equiv=\"Refresh\" content=\"0;url=http://snotra.bme.unc.edu/cgi-bin/metamorph_grid/webapp.pl\" />
+	</head>
+
+	<body>
+	</body>
+	</html>";
+
 }
