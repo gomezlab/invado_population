@@ -60,6 +60,9 @@ end
 dlmwrite(fullfile(output_dir,'Centroid_x.csv'), centroid_x);
 dlmwrite(fullfile(output_dir,'Centroid_y.csv'), centroid_y);
 
+cell_speed = determine_cell_speed(centroid_x,centroid_y);
+dlmwrite(fullfile(output_dir,'Cell_speed.csv'), cell_speed);
+
 toc;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -99,3 +102,19 @@ for tracking_num = 1:size(tracking_mat,1)
     end
 end
 
+function cell_speed = determine_cell_speed(centroid_x,centroid_y)
+    
+cell_speed = NaN(size(centroid_x));
+
+for cell_num = 1:size(centroid_x,1)
+    for i_num = 2:size(centroid_x,2)
+        if (not(isnan(centroid_x(cell_num,i_num - 1))) && ...
+            not(isnan(centroid_x(cell_num,i_num))))
+            
+            speed = sqrt((centroid_x(cell_num,i_num) - centroid_x(cell_num, i_num - 1))^2 + ...
+                (centroid_y(cell_num,i_num) - centroid_y(cell_num, i_num - 1))^2);
+            
+            cell_speed(cell_num,i_num) = speed;
+        end
+    end
+end
