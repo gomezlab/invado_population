@@ -7,6 +7,7 @@ tic;
 i_p = inputParser;
 
 i_p.addRequired('base_dir',@(x)exist(x,'dir') == 7);
+
 i_p.addOptional('debug',0,@(x)x == 1 | x == 0);
 i_p.parse(base_dir,varargin{:});
 
