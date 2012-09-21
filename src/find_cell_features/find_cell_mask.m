@@ -61,14 +61,13 @@ for i_num = 1:size(image_dirs)
         1;
     end
     threshed_mask = puncta_image > thresh;
+    connected_areas = filter_mask(threshed_mask, puncta_image, ...
+            i_p.Results.min_cell_area,i_p.Results.max_cell_area,i_p.Results.min_cell_intensity);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Mask Cleanup
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if (not(isempty(prior_connected_areas)))
-        connected_areas = filter_mask(threshed_mask, puncta_image, ...
-            i_p.Results.min_cell_area,Inf,i_p.Results.min_cell_intensity);
-        
         connected_areas = filter_on_overlap(puncta_image,connected_areas,prior_connected_areas,...
             i_p.Results.min_cell_area);
         threshed_mask = connected_areas > 0;
@@ -76,8 +75,6 @@ for i_num = 1:size(image_dirs)
             i_p.Results.min_cell_area,i_p.Results.max_cell_area,i_p.Results.min_cell_intensity);
         threshed_mask = connected_areas > 0;
     else
-        connected_areas = filter_mask(threshed_mask, puncta_image, ...
-            i_p.Results.min_cell_area,i_p.Results.max_cell_area,i_p.Results.min_cell_intensity);
         threshed_mask = connected_areas > 0;
     end
     
