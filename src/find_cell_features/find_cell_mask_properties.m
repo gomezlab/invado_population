@@ -8,7 +8,6 @@ i_p = inputParser;
 
 i_p.addRequired('exp_dir',@(x)exist(x,'dir') == 7);
 
-i_p.addParamValue('gelatin_min_value',382,@(x)isnumeric(x) && x > 0)
 i_p.addParamValue('debug',0,@(x)x == 1 || x == 0);
 
 i_p.parse(exp_dir,varargin{:});
@@ -135,7 +134,6 @@ i_p.addRequired('current_data',@isstruct);
 i_p.addRequired('prior_data',@isstruct);
 i_p.addRequired('final_data',@isstruct);
 
-i_p.addParamValue('gelatin_min_value',382,@(x)isnumeric(x) && x > 0)
 i_p.addOptional('debug',0,@(x)x == 1 || x == 0);
 
 i_p.parse(current_data,prior_data,final_data,varargin{:});
@@ -164,7 +162,6 @@ if (isempty(cell_props))
     cell_props(1).Cell_gel_diff_median = [];
     cell_props(1).Cell_gel_diff_total = [];
     cell_props(1).Cell_gel_diff_percent = [];
-    cell_props(1).Cell_gel_diff_percent_final = [];
     
     cell_props(1).Surrounding_diff_percent = [];
     cell_props(1).Gel_diff_minus_surrounding = [];
@@ -180,7 +177,6 @@ else
     [cell_props.Cell_gel_diff_median] = deal(NaN);
     [cell_props.Cell_gel_diff_total] = deal(NaN);
     [cell_props.Cell_gel_diff_percent] = deal(NaN);
-    [cell_props.Cell_gel_diff_percent_final] = deal(NaN);
 
     [cell_props.Surrounding_diff_percent] = deal(NaN);
     [cell_props.Gel_diff_minus_surrounding] = deal(NaN);
@@ -196,6 +192,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Properites Always Extracted
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+diff_image = current_data.gel_image - prior_data.gel_image;
 
 for i=1:max(current_data.labeled_cells(:))
     %this bit of code isolates a single object as a logical image and
@@ -221,8 +219,7 @@ for i=1:max(current_data.labeled_cells(:))
     end
     
     %Cell overlap differences
-    differences = current_data.gel_image(overlap_region) - ...
-        prior_data.gel_image(overlap_region);
+    differences = diff_image(overlap_region);
     
     cell_props(i).Cell_gel_before = mean(prior_data.gel_image(overlap_region));
     cell_props(i).Cell_gel_after = mean(current_data.gel_image(overlap_region));
@@ -233,22 +230,15 @@ for i=1:max(current_data.labeled_cells(:))
     cell_props(i).Cell_gel_diff_median = median(differences);
     cell_props(i).Cell_gel_diff_total = sum(differences);
     
-    gel_intensity_corrected = cell_props(i).Cell_gel_before - i_p.Results.gelatin_min_value;
-    cell_props(i).Cell_gel_diff_percent = 100*(cell_props(i).Cell_gel_diff/gel_intensity_corrected);
+    cell_props(i).Cell_gel_diff_percent = 100*(cell_props(i).Cell_gel_diff/cell_props(i).Cell_gel_before);
     
     %Surrounding differences
-    differences = current_data.gel_image(this_surrounding_region) - ...
-        prior_data.gel_image(this_surrounding_region);
+    surrounding_diff = diff_image(this_surrounding_region);
     
-    cell_props(i).Surrounding_diff_percent = 100*(mean(differences)/gel_intensity_corrected);
+    cell_props(i).Surrounding_diff_percent = 100*(mean(surrounding_diff)/cell_props(i).Cell_gel_before);
     
     cell_props(i).Gel_diff_minus_surrounding = cell_props(i).Cell_gel_diff_percent - ...
         cell_props(i).Surrounding_diff_percent;
-    
-    %Final image differences
-    final_diffs = final_data.gel_image(overlap_region) - ...
-        current_data.gel_image(overlap_region);
-    cell_props(i).Cell_gel_diff_percent_final = 100*(mean(final_diffs)/gel_intensity_corrected);
     
     %single cell diagnostics
     if (i_p.Results.debug)
