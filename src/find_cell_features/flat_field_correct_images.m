@@ -7,6 +7,8 @@ tic;
 i_p = inputParser;
 
 i_p.addRequired('exp_dir',@(x)exist(x,'dir') == 7);
+
+i_p.addParamValue('min_gel_intensity',436,@(x)isnumeric(x) && x > 0);
 i_p.addParamValue('debug',0,@(x)x == 1 || x == 0);
 
 i_p.parse(exp_dir,varargin{:});
@@ -55,7 +57,7 @@ for j=1:length(fields)
     % Gel Correction
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
     gel_flat_field = double(imread(fullfile(base_dir,image_dirs(1).name,filenames.gel_median)));
-    gel_flat_field = gel_flat_field - mean(gel_flat_field(:));
+    gel_flat_field = gel_flat_field - mean(gel_flat_field(:)) + i_p.Results.min_gel_intensity;
     for i = 1:size(image_dirs)
         if (exist(fullfile(base_dir,image_dirs(i).name,['uncorrected_', filenames.gel]),'file'))
             continue;
@@ -64,7 +66,6 @@ for j=1:length(fields)
         
         gel_image = gel_image - gel_flat_field;
         gel_image(gel_image < 0) = 0;
-        
 %         movefile(fullfile(base_dir,image_dirs(i).name,filenames.gel), ...
 %             fullfile(base_dir,image_dirs(i).name,['uncorrected_', filenames.gel]));
         
