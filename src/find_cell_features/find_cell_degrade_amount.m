@@ -25,7 +25,8 @@ filenames = add_filenames_to_struct(struct());
 fields = dir(base_dir);
 fields = filter_to_time_series(fields);
 
-for i=1:length(fields)
+% for i=1:length(fields)
+for i = 22
     exp_dir = fullfile(base_dir,fields(i).name);
     image_dir = fullfile(exp_dir,'individual_pictures');
     
@@ -51,21 +52,22 @@ for i=1:length(fields)
     
     first_gel_image = double(imread(fullfile(image_dir,image_dirs(1).name,filenames.gel)));
     first_gel_image_trunc = first_gel_image;
-    outside_range = first_gel_image > gel_range(2,2);
+    outside_range = first_gel_image > gel_range(2,2) | first_gel_image < gel_range(2,1);
     first_gel_image_trunc(outside_range) = NaN;
     
     
     final_gel_image = double(imread(fullfile(image_dir,image_dirs(end).name,filenames.gel)));
     final_gel_image_trunc = final_gel_image;
-    outside_range = final_gel_image > gel_range(2,2);
+    outside_range = final_gel_image > gel_range(2,2) | final_gel_image < gel_range(2,1);
     final_gel_image_trunc(outside_range) = NaN;
+    
+    diff_image = final_gel_image_trunc - first_gel_image_trunc;
     
     no_cell_regions = imread(fullfile(image_dir,image_dirs(1).name,filenames.no_cells));
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Count the number of times a cell was seen in each pixel
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
     cell_hit_counts = cell(size(tracking_mat,1),1);
     
     for i_num = 1:size(tracking_mat,2)
@@ -86,20 +88,28 @@ for i=1:length(fields)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Determine what the matrix does underneath each cell
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
     diffs = zeros(length(cell_hit_counts),1);
     corrected_diffs = zeros(length(cell_hit_counts),1);
     
     for cell_num = 1:length(cell_hit_counts)
         cell_extent = cell_hit_counts{cell_num} > 10;
         
-        surrounding_cell_extent = imdilate(cell_extent,strel('disk',40)) & no_cell_regions;
+        surrounding_cell_extent = imdilate(cell_extent,strel('disk',40)) & not(cell_extent);
         
-        diff_vals = final_gel_image_trunc(cell_extent) - first_gel_image_trunc(cell_extent);
-        surrounding_diff_pixels = final_gel_image_trunc(surrounding_cell_extent) - ...
-            first_gel_image_trunc(surrounding_cell_extent);
+        diff_vals = diff_image(cell_extent);
+        surrounding_diff_pixels = diff_image(surrounding_cell_extent);
+        
         nan_count = sum(isnan(diff_vals));
-        if (nan_count > length(diff_vals)*0.25)
+        nan_surrounding_count = sum(isnan(surrounding_diff_pixels));
+        
+        
+        temp = zeros(size(cell_extent));
+        temp(cell_extent) = 1;
+        temp(no_cell_regions) = 2;
+        temp(surrounding_cell_extent) = 3;
+        
+        if (nan_count > length(diff_vals)*0.5 || ...
+            nan_surrounding_count > length(surrounding_diff_pixels)*0.5)
             diffs(cell_num) = NaN;
             corrected_diffs(cell_num) = NaN;
         else
@@ -108,7 +118,6 @@ for i=1:length(fields)
             corrected_diffs(cell_num) = 100*(nanmean(diff_vals)/first_intensity) - ...
                 100*(nanmean(surrounding_diff_pixels)/first_intensity);
         end
-        1;
     end
     
     csvwrite(fullfile(image_dir,image_dirs(1).name,filenames.final_gel_diffs),diffs);
