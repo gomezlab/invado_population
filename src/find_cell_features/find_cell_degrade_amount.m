@@ -8,7 +8,6 @@ i_p = inputParser;
 
 i_p.addRequired('base_dir',@(x)exist(x,'dir') == 7);
 
-i_p.addParamValue('gelatin_min_value',382,@(x)isnumeric(x) && x > 0)
 i_p.addParamValue('debug',0,@(x)x == 1 || x == 0);
 
 i_p.parse(base_dir,varargin{:});
@@ -25,8 +24,7 @@ filenames = add_filenames_to_struct(struct());
 fields = dir(base_dir);
 fields = filter_to_time_series(fields);
 
-% for i=1:length(fields)
-for i = 22
+for i=1:length(fields)
     exp_dir = fullfile(base_dir,fields(i).name);
     image_dir = fullfile(exp_dir,'individual_pictures');
     
@@ -102,7 +100,6 @@ for i = 22
         nan_count = sum(isnan(diff_vals));
         nan_surrounding_count = sum(isnan(surrounding_diff_pixels));
         
-        
         temp = zeros(size(cell_extent));
         temp(cell_extent) = 1;
         temp(no_cell_regions) = 2;
@@ -113,15 +110,14 @@ for i = 22
             diffs(cell_num) = NaN;
             corrected_diffs(cell_num) = NaN;
         else
-            first_intensity = nanmean(first_gel_image_trunc(cell_extent)) - i_p.Results.gelatin_min_value;
+            first_intensity = nanmean(first_gel_image_trunc(cell_extent));
             diffs(cell_num) = 100*(nanmean(diff_vals)/first_intensity);
-            corrected_diffs(cell_num) = 100*(nanmean(diff_vals)/first_intensity) - ...
-                100*(nanmean(surrounding_diff_pixels)/first_intensity);
+            corrected_diffs(cell_num) = 100*((nanmean(diff_vals) - nanmean(surrounding_diff_pixels))/first_intensity);
         end
     end
     
-    csvwrite(fullfile(image_dir,image_dirs(1).name,filenames.final_gel_diffs),diffs);
-    csvwrite(fullfile(image_dir,image_dirs(1).name,filenames.corrected_final_gel_diffs),corrected_diffs);
+    csvwrite(fullfile(image_dir,image_dirs(i).name,filenames.final_gel_diffs),diffs);
+    csvwrite(fullfile(image_dir,image_dirs(i).name,filenames.corrected_final_gel_diffs),corrected_diffs);
     disp(['Done with ', exp_dir]);
 end
 toc;
