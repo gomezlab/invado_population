@@ -42,18 +42,22 @@ end
 
 load(fullfile(base_dir, image_dirs(1).name,filenames.cell_props));
 
-data_to_gather = {'Cell_gel_diff','Cell_gel_diff_median','Cell_gel_diff_p_val','Area' ... 
-    'Cell_gel_diff_total','Cell_gel_diff_percent','MeanIntensity','Cell_gel_diff_percent', ...
-    'Cell_gel_diff_percent_final','Cell_gel_before','Cell_gel_after','Overlap_area', ...
-    'Overlap_percent','Gel_diff_minus_surrounding'};
+data_types = fieldnames(all_cell_props{2});
 
-for i = 1:length(data_to_gather)
+data_to_exclude = {'MeanIntensity','StdIntensity','Centroid','Overlap_area',...
+    'Overlap_percent'};
+
+for i = 1:length(data_types)
     output_dir = fullfile(base_dir, image_dirs(1).name,filenames.lineage_dir);
     if (not(exist(output_dir,'dir'))), mkdir(output_dir); end
     
-    this_data = scan_through_property(tracking_mat,all_cell_props,data_to_gather{i});
+    if (any(strcmp(data_types{i},data_to_exclude)))
+        continue;
+    end
     
-    dlmwrite(fullfile(output_dir,[data_to_gather{i}, '.csv']), this_data);
+    this_data = scan_through_property(tracking_mat,all_cell_props,data_types{i});
+    
+    dlmwrite(fullfile(output_dir,[data_types{i}, '.csv']), this_data);
 end
 
 [centroid_x,centroid_y] = scan_through_bi_property(tracking_mat,all_cell_props,'Centroid');
