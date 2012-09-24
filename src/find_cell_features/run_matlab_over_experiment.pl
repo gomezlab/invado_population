@@ -48,8 +48,12 @@ $opt{abs_script_dir} = File::Spec->rel2abs($opt{script_dir});
 ################################################################################
 # Main Program
 ################################################################################
+my $extra = '';
+if ($opt{script} =~ /flat_field_correct/) {
+	$extra = ",'min_gel_intensity',$cfg{min_gel_intensity}";
+}
 
-my @matlab_code = ("$opt{script}('" . dirname($cfg{exp_results_folder}) . "')\n");
+my @matlab_code = ("$opt{script}('" . dirname($cfg{exp_results_folder}) . "'$extra)\n");
 
 $opt{error_folder} = catdir($cfg{exp_results_folder}, $cfg{errors_folder}, $opt{script});
 $opt{error_file} = catfile($opt{error_folder}, 'error.txt');

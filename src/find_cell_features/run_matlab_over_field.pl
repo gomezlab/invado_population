@@ -50,11 +50,6 @@ $opt{abs_script_dir} = File::Spec->rel2abs($opt{script_dir});
 ################################################################################
 
 my $extra = '';
-if ($opt{script} =~ /find_cell_mask_properties/) {
-	if (defined $cfg{gelatin_min_value}) {
-		$extra = ",'gelatin_min_value',$cfg{gelatin_min_value}";
-	}
-}
 
 my @matlab_code = ("$opt{script}('$cfg{exp_results_folder}'$extra)\n");
 
