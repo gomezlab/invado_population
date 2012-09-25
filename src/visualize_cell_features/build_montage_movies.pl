@@ -39,16 +39,20 @@ my %cfg     = $ad_conf->get_cfg_hash;
 
 my $montage_folder = catdir(dirname($cfg{exp_results_folder}), 'montage');
 
-my $base_movie_command = "ffmpeg -sameq -v 0 -y -r $cfg{movie_frame_rate} ";
+# my $base_movie_command = "ffmpeg -sameq -v 0 -y -r $cfg{movie_frame_rate} ";
+my $base_movie_command = "avconv -y -r $cfg{movie_frame_rate} ";
 
-for my $this_montage_folder (<$montage_folder/*>) {
+my @movie_folders = <$montage_folder/*>;
+@movie_folders = grep -d $_, @movie_folders;
+
+for my $this_montage_folder (@movie_folders) {
 	my @files = <$this_montage_folder/*>;
 	my $image_num_length = length(@files);
 
-	my $movie_output_file = catfile($montage_folder,basename($this_montage_folder).".mp4");
+	my $movie_output_file = catfile($montage_folder,'../',basename($this_montage_folder).".mov");
 	
 	my $movie_command = $base_movie_command . 
-		"-i $this_montage_folder/%0" . $image_num_length . "d.png $movie_output_file >/dev/null 2>/dev/null";
+		"-i $this_montage_folder/%0" . $image_num_length . "d.png -q 1 $movie_output_file ";
 	
 	if ($opt{debug}) {
 		print $movie_command, "\n";
