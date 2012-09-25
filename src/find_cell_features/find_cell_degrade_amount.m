@@ -46,7 +46,7 @@ for i=1:length(fields)
         tracking_mat = csvread(tracking_file);
     end
     
-%     gel_range = csvread(fullfile(image_dir,image_dirs(1).name,filenames.gel_range));
+    
     
     first_gel_image = double(imread(fullfile(image_dir,image_dirs(1).name,filenames.gel)));
     first_gel_image_trunc = first_gel_image;
@@ -87,7 +87,10 @@ for i=1:length(fields)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     diffs = zeros(length(cell_hit_counts),1);
     corrected_diffs = zeros(length(cell_hit_counts),1);
+    degrade_areas = zeros(length(cell_hit_counts),1);
     
+    degrade_regions = zeros(size(no_cell_regions));
+    cell_outlines = zeros(size(no_cell_regions));
     for cell_num = 1:length(cell_hit_counts)
         cell_extent = cell_hit_counts{cell_num} > 10;
         
@@ -104,6 +107,8 @@ for i=1:length(fields)
         temp(no_cell_regions) = 2;
         temp(surrounding_cell_extent) = 3;
         
+        cell_outlines(bwperim(cell_extent)) = 1;
+        
         if (nan_count > length(diff_vals)*0.5 || ...
             nan_surrounding_count > length(surrounding_diff_pixels)*0.5)
             diffs(cell_num) = NaN;
@@ -112,11 +117,26 @@ for i=1:length(fields)
             first_intensity = nanmean(first_gel_image_trunc(cell_extent));
             diffs(cell_num) = 100*(nanmean(diff_vals)/first_intensity);
             corrected_diffs(cell_num) = 100*((nanmean(diff_vals) - nanmean(surrounding_diff_pixels))/first_intensity);
+            
+            degrade_areas(cell_num) = sum(sum(cell_extent & diff_image < first_intensity*-0.2));
+            
+            degrade_regions(cell_extent & diff_image < first_intensity*-0.2) = 1;
         end
     end
     
+    gel_range = csvread(fullfile(image_dir,image_dirs(1).name,filenames.gel_range));
+    
+    thick_outlines = thicken_perimeter(cell_outlines,NaN,2);
+    
+    degrade_highlights = (final_gel_image - gel_range(2,1))/range(gel_range(2,:));
+    degrade_highlights = create_highlighted_image(degrade_highlights,thick_outlines,'color_map',[1,1,0]);
+    degrade_highlights = create_highlighted_image(degrade_highlights,degrade_regions,'color_map',[1,0,0],'mix_percent',0.25);
+    
+    imwrite(degrade_highlights,fullfile(image_dir,image_dirs(i).name,filenames.final_degrade_highlights));
+    
     csvwrite(fullfile(image_dir,image_dirs(i).name,filenames.final_gel_diffs),diffs);
     csvwrite(fullfile(image_dir,image_dirs(i).name,filenames.corrected_final_gel_diffs),corrected_diffs);
+    csvwrite(fullfile(image_dir,image_dirs(i).name,filenames.corrected_final_gel_diffs),degrade_areas);
     disp(['Done with ', exp_dir]);
 end
 toc;
