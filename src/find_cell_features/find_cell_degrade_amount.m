@@ -46,18 +46,17 @@ for i=1:length(fields)
         tracking_mat = csvread(tracking_file);
     end
     
-    gel_range = csvread(fullfile(image_dir,image_dirs(1).name,filenames.gel_range));
+%     gel_range = csvread(fullfile(image_dir,image_dirs(1).name,filenames.gel_range));
     
     first_gel_image = double(imread(fullfile(image_dir,image_dirs(1).name,filenames.gel)));
     first_gel_image_trunc = first_gel_image;
-    outside_range = first_gel_image > gel_range(2,2) | first_gel_image < gel_range(2,1);
-    first_gel_image_trunc(outside_range) = NaN;
+    junk_area = first_gel_image > mean(first_gel_image(:)) + 2*std(first_gel_image(:));
+    first_gel_image_trunc(junk_area) = NaN;
     
-    
-    final_gel_image = double(imread(fullfile(image_dir,image_dirs(end).name,filenames.gel)));
+    final_gel_image = double(imread(fullfile(image_dir,image_dirs(end).name,filenames.gel)));    
     final_gel_image_trunc = final_gel_image;
-    outside_range = final_gel_image > gel_range(2,2) | final_gel_image < gel_range(2,1);
-    final_gel_image_trunc(outside_range) = NaN;
+    junk_area = final_gel_image > mean(final_gel_image(:)) + 2*std(final_gel_image(:));
+    final_gel_image_trunc(junk_area) = NaN;
     
     diff_image = final_gel_image_trunc - first_gel_image_trunc;
     
