@@ -63,7 +63,7 @@ for field_num = 1:length(fields)
     
     gel_levels = zeros(length(single_image_folders),1);
     gel_levels_outside_cell = zeros(size(gel_levels));
-    
+    gel_levels_final = zeros(size(gel_levels));
     for i=1:length(single_image_folders)
         gel_file = fullfile(image_dir,single_image_folders(i).name,filenames.gel);
         gel = imread(gel_file);
@@ -74,23 +74,24 @@ for field_num = 1:length(fields)
         %     gel_file_no_corr = fullfile(image_dir,single_image_folders(i).name,'gel_no_bleaching.png');
         %     copyfile(gel_file,gel_file_no_corr);
         
-%         gel_corr = uint16(double(gel).*double(gel_levels_outside_cell(1)/gel_levels_outside_cell(i)));
-%         imwrite(gel_corr,gel_file,'BitDepth',16);
+        gel_corr = uint16(double(gel).*double(gel_levels_outside_cell(1)/gel_levels_outside_cell(i)));
+        imwrite(gel_corr,gel_file,'BitDepth',16);
+        gel_levels_final(i) = mean(gel_corr(:));
     end
-    1;
+    
     % for i=1:length(single_image_folders)
     %     dlmwrite(fullfile(image_dir, single_image_folders(i).name, filenames.intensity_correction), ...
     %         1000/gel_levels_outside_cell(i));
     % end
     
     %diagnostic plot
-    time_points = (0:(length(gel_levels) - 1))*5;
+    time_points = (0:(length(gel_levels) - 1))*0.5;
     diag_fig_hnd = plot(time_points,gel_levels);
     xlabel('Time', 'Fontsize',16)
     ylabel('Average Intensity', 'Fontsize',16);
     hold on;
     plot(time_points,gel_levels_outside_cell,'r');
-    
+    plot(time_points,gel_levels_final,'k');
     y_limits = ylim();
     ylim([0 y_limits(2)]);
     
