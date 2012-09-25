@@ -86,7 +86,7 @@ for cell_num = 1:size(tracking_mat,1)
     
     data_sets_trimmed = cell(size(tracking_mat,2),1);
     for i_num = 1:length(track_row)
-        if (track_row(i_num) <= 0), continue; end
+%         if (track_row(i_num) <= 0), continue; end
 
         data_sets_trimmed{i_num} = trim_all_images(data_sets{i_num},row_min_max,col_min_max);
     end
@@ -191,41 +191,6 @@ for cell_num = 1:size(tracking_mat,1)
     end
     
     imwrite(full_montage,output_file);
-    
-    imwrite(full_montage,output_file);
-
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Create First/Last Image Montage
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    gel_first_last = cell(1,2); 
-    gel_first_last{1} = gel_frames{1}; gel_first_last{2} = gel_frames{end};
-    gel_montage_first_last = create_montage_image_set(gel_first_last,'num_cols',2);
-    gel_montage_first_last = draw_scale_bar(gel_montage_first_last,i_p.Results.pixel_size, ...
-        'bar_height',3,'bar_size',20);
-    
-    puncta_first_last = cell(1,2); 
-    puncta_first_last{1} = puncta_frames{1}; puncta_first_last{2} = puncta_frames{end};
-    puncta_montage_first_last = create_montage_image_set(puncta_first_last,'num_cols',2);
-
-    spacer = 0.5*ones(1,size(gel_montage_first_last,2),3);
-    
-    full_montage = cat(1,puncta_montage_first_last,spacer,gel_montage_first_last);
-    
-    image_num = sprintf('%03d',cell_num);
-    [~,field_dir] = fileparts(fileparts(base_dir));
-    [~,exp_type] = fileparts(fileparts(fileparts(base_dir)));
-    [~,date] = fileparts(fileparts(fileparts(fileparts(base_dir))));
-    output_file = fullfile(base_dir,image_dirs(1).name,filenames.single_cell_dir,...
-        [date,'-',exp_type(1:2),'-',field_dir,'-',image_num,'_first_last.png']);
-%     output_file = fullfile(base_dir,image_dirs(1).name,filenames.single_cell_dir,[image_num,'.png']);
-    
-    if (not(exist(fileparts(output_file),'dir')))
-        mkdir(fileparts(output_file))
-    end
-    
-    imwrite(full_montage,output_file);
-        
 end
 toc;
 
@@ -240,14 +205,13 @@ names = fieldnames(images);
 for i = 1:size(names)
     this_field = names{i};
     this_size = size(images.(this_field));
+    %we only want to trim the images, not all the other misc properties
+    %that come with the time point set of data, so check to make sure the
+    %field is the size of the gel image and if so, trim
     if (length(this_size) == length(image_size) && ...
         all(this_size == image_size))
-        
-        1;
-        temp = images.(this_field);
-        temp = temp(row_min_max(1):row_min_max(2),...
+    
+        images.(this_field) = images.(this_field)(row_min_max(1):row_min_max(2), ...
             col_min_max(1):col_min_max(2));
-        images.(this_field) = temp;
-        1;
     end
 end
