@@ -9,7 +9,11 @@ function perim_thick = thicken_perimeter(perims,objects,varargin)
 %       -3rd argument: thickeness of perimeter, defaults to 3
 
 if (islogical(perims)), perims = double(perims); end
-if (islogical(objects)), objects = double(objects); end
+if (islogical(objects)), 
+    objects = double(objects);
+else
+    objects = ones(size(perims));
+end
 
 thickness = 3;
 if (size(varargin,2) > 0)
