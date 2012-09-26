@@ -50,12 +50,18 @@ if (exists($opt{exp_filter})) {
 }
 
 my $parallel_return = system("which parallel");
+my $ionice_return = system("ionice -c3 ls");
 
 my @command_set;
 foreach (@config_files) {
     next if /config\/default/;
 
-    my $command = "nice -n 20 ionice -c3 ./$program_base -cfg $_ $debug_string $opt{extra}";
+    my $command = "nice -n 20 ./$program_base -cfg $_ $debug_string $opt{extra}";
+
+	if ($ionice_return == 0) {
+		$command .= "ionice -c3 ";
+	}
+
     $command =~ s/"/\\"/g;
     push @command_set, "\"$command; echo $_;\"";
 	if ($parallel_return != 0) {
