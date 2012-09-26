@@ -136,7 +136,7 @@ for i=1:length(fields)
     
     csvwrite(fullfile(image_dir,image_dirs(i).name,filenames.final_gel_diffs),diffs);
     csvwrite(fullfile(image_dir,image_dirs(i).name,filenames.corrected_final_gel_diffs),corrected_diffs);
-    csvwrite(fullfile(image_dir,image_dirs(i).name,filenames.corrected_final_gel_diffs),degrade_areas);
+    csvwrite(fullfile(image_dir,image_dirs(i).name,filenames.degrade_areas),degrade_areas);
     disp(['Done with ', exp_dir]);
 end
 toc;
