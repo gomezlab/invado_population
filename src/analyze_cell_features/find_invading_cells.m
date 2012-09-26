@@ -129,17 +129,3 @@ disp(['Detected ', num2str(sum(process_data.active_degrade(:))), ' invasion even
 
 process_data.live_cells = raw_data.tracking > 0;
 process_data.longevities = sum(process_data.live_cells,2)/2;
-
-process_data.ever_degrade = [];
-for i=1:size(raw_data.tracking,1)
-    process_data.ever_degrade = [process_data.ever_degrade, any(process_data.active_degrade(i,:))];
-end
-
-process_data.has_degraded = zeros(size(raw_data.tracking));
-for i=1:size(raw_data.tracking,1)
-    for j = 1:size(raw_data.tracking,2)
-        process_data.has_degraded(i,j) = any(process_data.has_degraded(i,1:j));
-    end
-end
-
-process_data.degrade_percentage = sum(process_data.has_degraded)/size(raw_data.tracking,1);

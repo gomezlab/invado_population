@@ -25,8 +25,9 @@ if (isempty(fields))
     return;
 end
 
-raw_data = struct('active_degrade',[],'longevity',[],'tracking',[],'diff_percents',[], ...
-    'final_diff',[],'gel_minus_surrounding',[],'corrected_final_diff',[]);
+raw_data = struct('active_degrade',[],'longevity',[],'tracking',[], ...
+    'gel_minus_surrounding',[],'corrected_final_diff',[],'field_number',[],...
+    'cell_number',[],'cell_speed',[],'degradation_area',[]);
 
 for j=1:length(fields)
     props_base = fullfile(exp_dir,fields(j).name,'cell_props');
@@ -43,20 +44,23 @@ for j=1:length(fields)
     longev_data = csvread(fullfile(props_base,'longevity.csv'));
     raw_data.longevity = [raw_data.longevity;longev_data];
 
-    diff_percents = csvread(fullfile(props_base,'lin_time_series','Cell_gel_diff_percent.csv'));
-    raw_data.diff_percents = [raw_data.diff_percents;diff_percents];    
-
+    degradation_area = csvread(fullfile(props_base,'degradation_area.csv'));
+    raw_data.degradation_area = [raw_data.degradation_area;degradation_area];
+    
     gel_minus = csvread(fullfile(props_base,'lin_time_series','Gel_diff_minus_surrounding.csv'));
     raw_data.gel_minus_surrounding = [raw_data.gel_minus_surrounding;gel_minus];    
-    
-    final_diff = csvread(fullfile(props_base,'final_gel_diffs.csv'));
-    raw_data.final_diff = [raw_data.final_diff;final_diff];    
 
+    cell_speed = csvread(fullfile(props_base,'lin_time_series','Cell_speed.csv'));
+    raw_data.cell_speed = [raw_data.cell_speed;cell_speed];    
+  
     corrected_final_diff = csvread(fullfile(props_base,'corrected_final_gel_diffs.csv'));
     raw_data.corrected_final_diff = [raw_data.corrected_final_diff;corrected_final_diff];    
     
     tracking_data = csvread(fullfile(exp_dir,fields(j).name,'tracking_matrices','tracking_seq.csv'));
     raw_data.tracking = [raw_data.tracking;tracking_data];
+    
+    raw_data.field_number = [raw_data.field_number;j*ones(size(tracking_data,1),1)];
+    raw_data.cell_number = [raw_data.cell_number;(1:size(tracking_data,1))'];
 end
 
 longev_filter = raw_data.longevity > i_p.Results.min_longevity;
@@ -71,21 +75,40 @@ output_dir = fullfile(exp_dir,'overall_results');
 if (not(exist(output_dir,'dir')))
     mkdir(output_dir)
 end
+
 csvwrite(fullfile(output_dir,'degrade_percentage.csv'),processed_data.degrade_percentage);
+csvwrite(fullfile(output_dir,'has_degraded.csv'),processed_data.has_degraded);
+
+csvwrite(fullfile(output_dir,'fields_cells.csv'),...
+     [processed_data.field_number,processed_data.cell_number]);
+
+csvwrite(fullfile(output_dir,'average_cell_speed.csv'),processed_data.average_cell_speed);
+csvwrite(fullfile(output_dir,'median_cell_speed.csv'),processed_data.average_cell_speed);
+
+csvwrite(fullfile(output_dir,'degradation_area.csv'),processed_data.degradation_area);
+
 csvwrite(fullfile(output_dir,'live_cells_per_image.csv'),processed_data.live_cells_per_image);
 
-final_diffs_filt = raw_data.final_diff(longev_filter);
-csvwrite(fullfile(output_dir,'final_diffs.csv'),final_diffs_filt);
+csvwrite(fullfile(output_dir,'corrected_final_diffs.csv'),processed_data.corrected_final_diff);
 
-corrected_final_diffs_filt = raw_data.corrected_final_diff(longev_filter);
-csvwrite(fullfile(output_dir,'corrected_final_diffs.csv'),corrected_final_diffs_filt);
+csvwrite(fullfile(output_dir,'gel_minus_surrounding.csv'),processed_data.gel_minus_surrounding);
 
-diff_percents = raw_data.diff_percents(longev_filter,:);
-csvwrite(fullfile(output_dir,'diff_percents.csv'),diff_percents);
+degrade_indexes = find(processed_data.ever_degrade);
+if (not(exist(fullfile(output_dir,'degrader'),'dir')))
+    mkdir(fullfile(output_dir,'degrader'));
+end
 
-gel_minus = raw_data.gel_minus_surrounding(longev_filter,:);
-csvwrite(fullfile(output_dir,'gel_minus_surrounding.csv'),gel_minus);
+csvwrite(fullfile(output_dir,'degrader','degradation_area.csv'), ...
+    processed_data.degradation_area(degrade_indexes));
 
+csvwrite(fullfile(output_dir,'degrader','median_cell_speed.csv'), ...
+    processed_data.median_cell_speed(degrade_indexes));
+
+csvwrite(fullfile(output_dir,'degrader','corrected_final_diffs.csv'), ...
+    processed_data.corrected_final_diff(degrade_indexes));
+
+csvwrite(fullfile(output_dir,'degrader','fields_cells.csv'),...
+     [processed_data.field_number(degrade_indexes),processed_data.cell_number(degrade_indexes)]);
 
 function processed_data = process_raw_data(raw_data,varargin)
 
@@ -105,14 +128,17 @@ i_p.parse(raw_data,varargin{:});
 %%Main Program
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+processed_data = struct();
 if (isempty(strcmp('filter_set',i_p.UsingDefaults)))
     these_names = fieldnames(raw_data);
     for j=1:size(these_names,1)
         raw_data.(these_names{j}) = raw_data.(these_names{j})(i_p.Results.filter_set,:);
+        processed_data.(these_names{j}) = raw_data.(these_names{j});
     end
 end
 
-processed_data = struct();
+processed_data.average_cell_speed = nanmean(processed_data.cell_speed,2);
+processed_data.median_cell_speed = nanmedian(processed_data.cell_speed,2);
 
 processed_data.live_cells = raw_data.tracking > 0;
 processed_data.live_cells_per_image = sum(processed_data.live_cells);
@@ -126,11 +152,6 @@ processed_data.has_degraded = zeros(size(raw_data.active_degrade));
 for i=1:size(raw_data.active_degrade,1)
     for j = 1:size(raw_data.active_degrade,2)
         processed_data.has_degraded(i,j) = raw_data.active_degrade(i,j) | any(processed_data.has_degraded(i,1:j));
-%         if (j == size(raw_data.active_degrade,2)) 
-%             processed_data.has_degraded(i,j) = raw_data.active_degrade(i,j) | any(processed_data.has_degraded(i,1:j));
-%         else
-%             processed_data.has_degraded(i,j) = ((raw_data.active_degrade(i,j) & raw_data.active_degrade(i,j+1))) | any(processed_data.has_degraded(i,1:j));
-%         end 
     end
 end
 
