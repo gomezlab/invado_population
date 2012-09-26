@@ -46,8 +46,6 @@ for i=1:length(fields)
         tracking_mat = csvread(tracking_file);
     end
     
-    
-    
     first_gel_image = double(imread(fullfile(image_dir,image_dirs(1).name,filenames.gel)));
     first_gel_image_trunc = first_gel_image;
     junk_area = first_gel_image > mean(first_gel_image(:)) + 2*std(first_gel_image(:));
@@ -114,13 +112,15 @@ for i=1:length(fields)
             diffs(cell_num) = NaN;
             corrected_diffs(cell_num) = NaN;
         else
-            first_intensity = nanmean(first_gel_image_trunc(cell_extent));
-            diffs(cell_num) = 100*(nanmean(diff_vals)/first_intensity);
-            corrected_diffs(cell_num) = 100*((nanmean(diff_vals) - nanmean(surrounding_diff_pixels))/first_intensity);
+            first_cell_intensity = nanmean(first_gel_image_trunc(cell_extent));
+            first_surrounding_intensity = nanmean(first_gel_image_trunc(surrounding_cell_extent));
+            diffs(cell_num) = 100*(nanmean(diff_vals)/first_cell_intensity);
+            surrounding_diff = 100*(nanmean(surrounding_diff_pixels)/first_surrounding_intensity);
+            corrected_diffs(cell_num) = diffs(cell_num) - surrounding_diff;
             
-            degrade_areas(cell_num) = sum(sum(cell_extent & diff_image < first_intensity*-0.2));
+            degrade_areas(cell_num) = sum(sum(cell_extent & diff_image < first_cell_intensity*-0.2));
             
-            degrade_regions(cell_extent & diff_image < first_intensity*-0.2) = 1;
+            degrade_regions(cell_extent & diff_image < first_cell_intensity*-0.2) = 1;
         end
     end
     
