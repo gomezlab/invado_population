@@ -53,7 +53,12 @@ if ($opt{script} =~ /flat_field_correct/) {
 	$extra = ",'min_gel_intensity',$cfg{min_gel_intensity}";
 }
 
-my @matlab_code = ("$opt{script}('" . dirname($cfg{exp_results_folder}) . "'$extra)\n");
+my @matlab_code;
+if ($opt{script} =~ /create_invader_visualization/) {
+	@matlab_code = ("run_script_over_experiment('" . dirname($cfg{exp_results_folder}) . "','$opt{script}')\n");
+} else {
+	@matlab_code = ("$opt{script}('" . dirname($cfg{exp_results_folder}) . "'$extra)\n");
+}
 
 $opt{error_folder} = catdir($cfg{exp_results_folder}, $cfg{errors_folder}, $opt{script});
 $opt{error_file} = catfile($opt{error_folder}, 'error.txt');

@@ -8,7 +8,6 @@ i_p = inputParser;
 i_p.addRequired('base_dir',@(x)exist(x,'dir') == 7);
 i_p.addRequired('script',@(x)ischar(x));
 
-i_p.addParamValue('gelatin_min_value',382,@(x)isnumeric(x) && x > 0);
 i_p.addParamValue('debug',0,@(x)x == 1 || x == 0);
 
 i_p.parse(base_dir,script,varargin{:});
