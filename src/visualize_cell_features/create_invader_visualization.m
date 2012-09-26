@@ -37,14 +37,16 @@ else
     tracking_mat = csvread(tracking_file);
     active_degrade = csvread(fullfile(field_dir,'cell_props','active_degrade.csv'));
     
-    data_sets_to_read = {'Cell_gel_diff','Cell_gel_diff_median','Cell_gel_diff_p_val','Area' ...
-        'Cell_gel_diff_total','Cell_gel_diff_percent','Centroid_x','Centroid_y','Overlap_area'};
+    data_sets_to_read = {'Area','Gel_diff_minus_surrounding','Centroid_x','Centroid_y'};
     raw_data = struct();
     
     for i = 1:length(data_sets_to_read)
         data_dir = fullfile(base_dir, image_dirs(1).name,filenames.lineage_dir);
         raw_data.(data_sets_to_read{i}) = csvread(fullfile(data_dir,[data_sets_to_read{i}, '.csv']));
     end
+    
+    raw_data.corrected_final_gel_diffs = ...
+        csvread(fullfile(base_dir,image_dirs(1).name,filenames.corrected_final_gel_diffs));
     
     longevity = sum(not(isnan(raw_data.Area)),2)/2;
 end
@@ -114,6 +116,7 @@ for i_num = 1:size(image_dirs,1)
     
     tracking_col = tracking_mat(:,i_num);
     
+    
     filtered_data = struct();
     for i = 1:length(data_sets_to_read)
         temp = NaN(sum(tracking_col > 0),1);
@@ -131,19 +134,18 @@ for i_num = 1:size(image_dirs,1)
     filtered_data.Centroid_y(filtered_data.Centroid_y < 0.1*img_size(1)) = 0.1*img_size(1);
     centroid = [filtered_data.Centroid_x,filtered_data.Centroid_y];
     
-    gel_diff = filtered_data.Cell_gel_diff;
     area = filtered_data.Area;
-    gel_diff_percent = filtered_data.Cell_gel_diff_percent;
-    gel_diff_median = filtered_data.Cell_gel_diff_median;
+    gel_diff_percent = filtered_data.Gel_diff_minus_surrounding;
     
     all_annotate = '';
-    for cell_num = 1:length(gel_diff)
+    for cell_num = 1:length(gel_diff_percent)
+        cell_id = find(tracking_col == cell_num);
         pos_str = [' +',num2str(centroid(cell_num,1)),'+',num2str(centroid(cell_num,2))];
-        top_line = sprintf('%d/%d/%d',find(tracking_col == cell_num), ...
-            area(cell_num),filtered_data.Overlap_area(cell_num));
+        top_line = sprintf('%d/%d',cell_id, ...
+            area(cell_num));
         label_str = [' "', top_line,' \n', ...
-            sprintf('%.2f',gel_diff_percent(cell_num)), '% \n', ...
-            sprintf('%.2f',gel_diff(cell_num)),'"'];
+            sprintf('%.2f%',gel_diff_percent(cell_num)),' \n', ...
+            sprintf('%.2f%',raw_data.corrected_final_gel_diffs(cell_id)),'"'];
         all_annotate = [all_annotate, ' -annotate ', pos_str, label_str]; %#ok<AGROW>
     end
     command_str = ['convert ', output_file, ' -undercolor ''rgba(1,1,1,0.75)'' -font VeraBd.ttf -pointsize 16 -fill ''rgba(255,255,255,0.5)''', ...
