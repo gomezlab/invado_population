@@ -24,6 +24,8 @@ filenames = add_filenames_to_struct(struct());
 fields = dir(base_dir);
 fields = filter_to_time_series(fields);
 
+fields = fields(9);
+
 for i=1:length(fields)
     exp_dir = fullfile(base_dir,fields(i).name);
     image_dir = fullfile(exp_dir,'individual_pictures');
@@ -48,7 +50,8 @@ for i=1:length(fields)
     
     first_gel_image = double(imread(fullfile(image_dir,image_dirs(1).name,filenames.gel)));
     first_gel_image_trunc = first_gel_image;
-    junk_area = first_gel_image > mean(first_gel_image(:)) + 2*std(first_gel_image(:));
+    junk_area = first_gel_image > mean(first_gel_image(:)) + 2*std(first_gel_image(:)) | ...
+        first_gel_image < 30;
     first_gel_image_trunc(junk_area) = NaN;
     
     final_gel_image = double(imread(fullfile(image_dir,image_dirs(end).name,filenames.gel)));    
