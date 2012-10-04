@@ -23,6 +23,8 @@ fields = filter_to_time_series(fields);
 gel_pix_vals = get_all_image_array(base_dir,filenames.gel);
 gel_ranges = find_image_ranges(gel_pix_vals);
 
+gel_junk_threshold = mean(gel_pix_vals(:)) + 2*std(gel_pix_vals(:));
+
 clear gel_pix_vals;
 
 puncta_pix_vals = get_all_image_array(base_dir,filenames.puncta);
@@ -49,6 +51,7 @@ end
 
 csvwrite(gel_output_file,gel_ranges);
 csvwrite(puncta_output_file,puncta_ranges);
+csvwrite(fullfile(output_base,image_nums(1).name, filenames.gel_junk_threshold),gel_junk_threshold);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Functions
