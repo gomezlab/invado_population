@@ -36,6 +36,8 @@ for field_num = 1:length(fields)
     
     single_image_folders = single_image_folders(3:end);
     
+    gel_junk_threshold = csvread(fullfile(image_dir,image_dirs(1).name, filenames.gel_junk_threshold));    
+    
     output_dir = fileparts(fullfile(image_dir,single_image_folders(1).name,filenames.no_cells));
     if (not(exist(output_dir,'dir')))
         mkdir(output_dir);
@@ -44,7 +46,6 @@ for field_num = 1:length(fields)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Build the no cell region image
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
     photo_bleach_regions = [];
     
     for i=1:length(single_image_folders)
@@ -68,8 +69,10 @@ for field_num = 1:length(fields)
         gel_file = fullfile(image_dir,single_image_folders(i).name,filenames.gel);
         gel = imread(gel_file);
         
+        safe_intensity_regions = gel < gel_junk_threshold;
+        
         gel_levels(i) = mean(gel(:));
-        gel_levels_outside_cell(i) = mean(gel(photo_bleach_regions));
+        gel_levels_outside_cell(i) = mean(gel(photo_bleach_regions & safe_intensity_regions));
         
         %     gel_file_no_corr = fullfile(image_dir,single_image_folders(i).name,'gel_no_bleaching.png');
         %     copyfile(gel_file,gel_file_no_corr);
