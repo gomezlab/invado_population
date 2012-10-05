@@ -7,7 +7,7 @@ tic;
 i_p = inputParser;
 
 i_p.addRequired('base_dir',@(x)exist(x,'dir') == 7);
-
+i_p.addParamValue('field_filter',0,@(x)isnumeric(x));
 i_p.addParamValue('debug',0,@(x)x == 1 || x == 0);
 
 i_p.parse(base_dir,varargin{:});
@@ -24,21 +24,25 @@ filenames = add_filenames_to_struct(struct());
 fields = dir(base_dir);
 fields = filter_to_time_series(fields);
 
-fields = fields(9);
+if (not(any(strcmp('field_filter',i_p.UsingDefaults))))
+   fields = fields(i_p.Results.field_filter); 
+end
 
 for i=1:length(fields)
     exp_dir = fullfile(base_dir,fields(i).name);
     image_dir = fullfile(exp_dir,'individual_pictures');
     
-    image_dirs = dir(image_dir);
+    single_image_folders = dir(image_dir);
     
-    assert(strcmp(image_dirs(1).name, '.'), 'Error: expected "." to be first string in the dir command')
-    assert(strcmp(image_dirs(2).name, '..'), 'Error: expected ".." to be second string in the dir command')
-    assert(str2num(image_dirs(3).name) == 1, 'Error: expected the third string to be image set one') %#ok<ST2NM>
+    assert(strcmp(single_image_folders(1).name, '.'), 'Error: expected "." to be first string in the dir command')
+    assert(strcmp(single_image_folders(2).name, '..'), 'Error: expected ".." to be second string in the dir command')
+    assert(str2num(single_image_folders(3).name) == 1, 'Error: expected the third string to be image set one') %#ok<ST2NM>
     
-    image_dirs = image_dirs(3:end);
+    single_image_folders = single_image_folders(3:end);
     
-    tracking_file = fullfile(image_dir, image_dirs(1).name,filenames.tracking);
+    gel_junk_threshold = csvread(fullfile(image_dir,single_image_folders(1).name, filenames.gel_junk_threshold));    
+    
+    tracking_file = fullfile(image_dir, single_image_folders(1).name,filenames.tracking);
     %check for the existance of a tracking file, if absent, there weren't any
     %cells in this field, return from the function
     if (not(exist(tracking_file,'file')))
@@ -48,20 +52,20 @@ for i=1:length(fields)
         tracking_mat = csvread(tracking_file);
     end
     
-    first_gel_image = double(imread(fullfile(image_dir,image_dirs(1).name,filenames.gel)));
+    first_gel_image = double(imread(fullfile(image_dir,single_image_folders(1).name,filenames.gel)));
     first_gel_image_trunc = first_gel_image;
-    junk_area = first_gel_image > mean(first_gel_image(:)) + 2*std(first_gel_image(:)) | ...
+    junk_area = first_gel_image > gel_junk_threshold | ...
         first_gel_image < 30;
     first_gel_image_trunc(junk_area) = NaN;
     
-    final_gel_image = double(imread(fullfile(image_dir,image_dirs(end).name,filenames.gel)));    
+    final_gel_image = double(imread(fullfile(image_dir,single_image_folders(end).name,filenames.gel)));    
     final_gel_image_trunc = final_gel_image;
-    junk_area = final_gel_image > mean(final_gel_image(:)) + 2*std(final_gel_image(:));
+    junk_area = final_gel_image > gel_junk_threshold;
     final_gel_image_trunc(junk_area) = NaN;
     
     diff_image = final_gel_image_trunc - first_gel_image_trunc;
     
-    no_cell_regions = imread(fullfile(image_dir,image_dirs(1).name,filenames.no_cells));
+    no_cell_regions = imread(fullfile(image_dir,single_image_folders(1).name,filenames.no_cells));
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Count the number of times a cell was seen in each pixel
@@ -69,7 +73,7 @@ for i=1:length(fields)
     cell_hit_counts = cell(size(tracking_mat,1),1);
     
     for i_num = 1:size(tracking_mat,2)
-        current_dir = fullfile(image_dir,image_dirs(i_num).name);
+        current_dir = fullfile(image_dir,single_image_folders(i_num).name);
         labeled_cells = imread(fullfile(current_dir,filenames.labeled_cell_mask));
         
         for cell_num = 1:size(tracking_mat,1)
@@ -127,7 +131,7 @@ for i=1:length(fields)
         end
     end
     
-    gel_range = csvread(fullfile(image_dir,image_dirs(1).name,filenames.gel_range));
+    gel_range = csvread(fullfile(image_dir,single_image_folders(1).name,filenames.gel_range));
     
     thick_outlines = thicken_perimeter(cell_outlines,NaN,2);
     
@@ -135,11 +139,11 @@ for i=1:length(fields)
     degrade_highlights = create_highlighted_image(degrade_highlights,thick_outlines,'color_map',[1,1,0]);
     degrade_highlights = create_highlighted_image(degrade_highlights,degrade_regions,'color_map',[1,0,0],'mix_percent',0.25);
     
-    imwrite(degrade_highlights,fullfile(image_dir,image_dirs(i).name,filenames.final_degrade_highlights));
+    imwrite(degrade_highlights,fullfile(image_dir,single_image_folders(i).name,filenames.final_degrade_highlights));
     
-    csvwrite(fullfile(image_dir,image_dirs(i).name,filenames.final_gel_diffs),diffs);
-    csvwrite(fullfile(image_dir,image_dirs(i).name,filenames.corrected_final_gel_diffs),corrected_diffs);
-    csvwrite(fullfile(image_dir,image_dirs(i).name,filenames.degrade_areas),degrade_areas);
+    csvwrite(fullfile(image_dir,single_image_folders(i).name,filenames.final_gel_diffs),diffs);
+    csvwrite(fullfile(image_dir,single_image_folders(i).name,filenames.corrected_final_gel_diffs),corrected_diffs);
+    csvwrite(fullfile(image_dir,single_image_folders(i).name,filenames.degrade_areas),degrade_areas);
     disp(['Done with ', exp_dir]);
 end
 toc;
