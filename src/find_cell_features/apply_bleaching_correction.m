@@ -36,7 +36,7 @@ for field_num = 1:length(fields)
     
     single_image_folders = single_image_folders(3:end);
     
-    gel_junk_threshold = csvread(fullfile(image_dir,image_dirs(1).name, filenames.gel_junk_threshold));    
+    gel_junk_threshold = csvread(fullfile(image_dir,single_image_folders(1).name, filenames.gel_junk_threshold));    
     
     output_dir = fileparts(fullfile(image_dir,single_image_folders(1).name,filenames.no_cells));
     if (not(exist(output_dir,'dir')))
