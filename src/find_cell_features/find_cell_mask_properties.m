@@ -53,11 +53,10 @@ for i_num = 1:size(image_dirs,1)
     current_dir = fullfile(base_dir,image_dirs(i_num).name);
     current_data = read_in_file_set(current_dir,filenames);
     
-    current_junk_thresh = mean(current_data.gel_image(:)) + 2*std(double(current_data.gel_image(:)));
-    prior_junk_thresh = mean(current_data.gel_image(:)) + 2*std(double(current_data.gel_image(:)));
+    gel_junk_threshold = csvread(fullfile(current_dir, filenames.gel_junk_threshold));        
     
-    current_data.gel_junk = current_data.gel_image > current_junk_thresh;
-    prior_data.gel_junk = prior_data.gel_image > prior_junk_thresh;
+    current_data.gel_junk = current_data.gel_image > gel_junk_threshold;
+    prior_data.gel_junk = prior_data.gel_image > gel_junk_threshold;
     
     cell_props = collect_cell_properties(current_data,prior_data,final_data,'debug',i_p.Results.debug);
     all_cell_props{i_num} = cell_props;
