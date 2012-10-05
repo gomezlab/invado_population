@@ -70,7 +70,6 @@ processed_data = process_raw_data(raw_data,'filter_set',longev_filter);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Output
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 output_dir = fullfile(exp_dir,'overall_results');
 if (not(exist(output_dir,'dir')))
     mkdir(output_dir)
@@ -79,36 +78,65 @@ end
 csvwrite(fullfile(output_dir,'degrade_percentage.csv'),processed_data.degrade_percentage);
 csvwrite(fullfile(output_dir,'has_degraded.csv'),processed_data.has_degraded);
 
-csvwrite(fullfile(output_dir,'fields_cells.csv'),...
-     [processed_data.field_number,processed_data.cell_number]);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%All property file output
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+out_file = fullfile(output_dir,'single_cell_properties.csv');
+header_vals = {'field_number','cell_number','percent_matrix_degraded', ...
+    'average_cell_speed','median_cell_speed','degradation_area'};
 
-csvwrite(fullfile(output_dir,'average_cell_speed.csv'),processed_data.average_cell_speed);
-csvwrite(fullfile(output_dir,'median_cell_speed.csv'),processed_data.average_cell_speed);
+fid = fopen(out_file,'wt');
+for i = 1:length(header_vals)
+    if (i ~= length(header_vals))
+        fprintf(fid,'%s,',header_vals{i});
+    else
+        fprintf(fid,'%s\n',header_vals{i});
+    end
+end
+fclose(fid);
 
-csvwrite(fullfile(output_dir,'degradation_area.csv'),processed_data.degradation_area);
+property_matrix = [processed_data.field_number,processed_data.cell_number, ...
+    processed_data.corrected_final_diff,processed_data.average_cell_speed, ...
+    processed_data.median_cell_speed,processed_data.degradation_area];
+
+dlmwrite(out_file,property_matrix,'-append');
 
 csvwrite(fullfile(output_dir,'live_cells_per_image.csv'),processed_data.live_cells_per_image);
-
-csvwrite(fullfile(output_dir,'corrected_final_diffs.csv'),processed_data.corrected_final_diff);
-
 csvwrite(fullfile(output_dir,'gel_minus_surrounding.csv'),processed_data.gel_minus_surrounding);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Output of Degrader Properties
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 degrade_indexes = find(processed_data.ever_degrade);
 if (not(exist(fullfile(output_dir,'degrader'),'dir')))
     mkdir(fullfile(output_dir,'degrader'));
 end
 
-csvwrite(fullfile(output_dir,'degrader','degradation_area.csv'), ...
-    processed_data.degradation_area(degrade_indexes));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%All property file output
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+out_file = fullfile(output_dir,'degrader','single_cell_properties.csv');
+header_vals = {'field_number','cell_number','percent_matrix_degraded', ...
+    'average_cell_speed','median_cell_speed','degradation_area'};
 
-csvwrite(fullfile(output_dir,'degrader','median_cell_speed.csv'), ...
-    processed_data.median_cell_speed(degrade_indexes));
+fid = fopen(out_file,'wt');
+for i = 1:length(header_vals)
+    if (i ~= length(header_vals))
+        fprintf(fid,'%s,',header_vals{i});
+    else
+        fprintf(fid,'%s\n',header_vals{i});
+    end
+end
+fclose(fid);
 
-csvwrite(fullfile(output_dir,'degrader','corrected_final_diffs.csv'), ...
-    processed_data.corrected_final_diff(degrade_indexes));
+property_matrix = [processed_data.field_number,processed_data.cell_number, ...
+    processed_data.corrected_final_diff,processed_data.average_cell_speed, ...
+    processed_data.median_cell_speed,processed_data.degradation_area];
 
-csvwrite(fullfile(output_dir,'degrader','fields_cells.csv'),...
-     [processed_data.field_number(degrade_indexes),processed_data.cell_number(degrade_indexes)]);
+property_matrix = property_matrix(degrade_indexes,:);
+
+dlmwrite(out_file,property_matrix,'-append');
+
 
 function processed_data = process_raw_data(raw_data,varargin)
 
