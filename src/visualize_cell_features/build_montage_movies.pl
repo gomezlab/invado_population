@@ -52,7 +52,7 @@ for my $this_montage_folder (@movie_folders) {
 	my $movie_output_file = catfile($montage_folder,'../',basename($this_montage_folder).".mp4");
 	
 	my $movie_command = $base_movie_command . 
-		"-i $this_montage_folder/%0" . $image_num_length . "d.png -q 1 $movie_output_file ";
+		"-i $this_montage_folder/%0" . $image_num_length . "d.bmp -q 1 $movie_output_file ";
 	
 	if ($opt{debug}) {
 		print $movie_command, "\n";
