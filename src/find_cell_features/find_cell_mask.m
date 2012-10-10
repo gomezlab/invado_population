@@ -90,8 +90,9 @@ for i_num = 1:size(image_dirs)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Output Image Creation/Writing
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    thick_perim = thicken_perimeter(bwperim(threshed_mask),NaN);
     
-    imwrite(create_highlighted_image(normalized_image,bwperim(threshed_mask),'color_map',[1,0,0]), ...
+    imwrite(create_highlighted_image(normalized_image,thick_perim,'color_map',[1,0,0]), ...
         fullfile(base_dir,image_dirs(i_num).name,filenames.highlighted_cell_mask))
     
     imwrite(double(connected_areas)/2^16, ...
