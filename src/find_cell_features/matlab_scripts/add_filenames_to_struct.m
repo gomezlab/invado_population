@@ -20,6 +20,7 @@ filenames.gel = 'gel.png';
 filenames.gel_median = '../../../all_field_resources/gel_median.png';
 filenames.gel_range = '../../../all_field_resources/gel_image_range.csv';
 filenames.gel_junk_threshold = '../../../all_field_resources/gel_junk_threshold.csv';
+filenames.gel_junk = '../../cell_props/gel_junk.png';
 
 filenames.intensity_correction = 'intensity_correction.csv';
 
