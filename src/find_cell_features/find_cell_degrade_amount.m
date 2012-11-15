@@ -92,7 +92,6 @@ for i=1:length(fields)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     diffs = zeros(length(cell_hit_counts),1);
     corrected_diffs = zeros(length(cell_hit_counts),1);
-    degrade_areas = zeros(length(cell_hit_counts),1);
     
     degrade_regions = zeros(size(no_cell_regions));
     cell_outlines = zeros(size(no_cell_regions));
@@ -125,8 +124,6 @@ for i=1:length(fields)
             surrounding_diff = 100*(nanmean(surrounding_diff_pixels)/first_surrounding_intensity);
             corrected_diffs(cell_num) = diffs(cell_num) - surrounding_diff;
             
-            degrade_areas(cell_num) = sum(sum(cell_extent & diff_image < first_cell_intensity*-0.2));
-            
             degrade_regions(cell_extent & diff_image < first_cell_intensity*-0.2) = 1;
         end
     end
@@ -143,7 +140,7 @@ for i=1:length(fields)
     
     csvwrite(fullfile(image_dir,single_image_folders(i).name,filenames.final_gel_diffs),diffs);
     csvwrite(fullfile(image_dir,single_image_folders(i).name,filenames.corrected_final_gel_diffs),corrected_diffs);
-    csvwrite(fullfile(image_dir,single_image_folders(i).name,filenames.degrade_areas),degrade_areas);
+    
     disp(['Done with ', exp_dir]);
 end
 toc;
