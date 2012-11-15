@@ -23,7 +23,7 @@ my %opt;
 $opt{debug} = 0;
 $opt{extra} = "";
 GetOptions(\%opt, "cfg|config=s", "debug|d", "program|p=s", "extra|e=s", 
-                  "run_all_debug", "exp_filter=s") or die;
+                  "run_all_debug", "exp_filter=s", "no_parallel") or die;
 
 die "Can't find cfg file specified on the command line" if not(exists $opt{cfg});
 die "Can't find program to execute on the command line" if not(exists $opt{program});
@@ -49,7 +49,12 @@ if (exists($opt{exp_filter})) {
    @config_files = grep $_ =~ /$opt{exp_filter}/, @config_files;
 }
 
-my $parallel_return = system("which parallel");
+my $parallel_return;
+if ($opt{no_parallel}) {
+	$parallel_return = 1;
+} else {
+	$parallel_return = system("which parallel");
+}
 my $ionice_return = system("ionice -c3 ls");
 
 my @command_set;
@@ -69,14 +74,18 @@ foreach (@config_files) {
 			print "$command\n";
 		} else {
 			print("$_\n");
-			system("$command");
+			my $return_val = system("$command");
+			if ($return_val != 0) {
+				print("Caught Return Val: $return_val\n");
+				last;
+			}
 		}
 	}
 }
 
 if ($parallel_return == 0) {
 	if ($opt{debug}) {
-		my $parallel_cmd = "time parallel -j 75% -u --nice 20 ::: \n\t" . join("\n\t", @command_set) . "\t\n";
+		my $parallel_cmd = "time parallel -u --nice 20 ::: \n\t" . join("\n\t", @command_set) . "\t\n";
 		print $parallel_cmd;
 	} else {
 		while (@command_set) {

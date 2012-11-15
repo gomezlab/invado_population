@@ -60,6 +60,7 @@ my @overall_command_seq = (
 	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_cell_mask_properties_experiment" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script track_cells_experiment" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_cell_degrade_amount" ], ],
+	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script measure_degradation_time_series" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script ../analyze_cell_features/gather_tracking_results_experiment" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script ../analyze_cell_features/find_invading_cells_experiment" ], ],
 	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script ../analyze_cell_features/find_full_exp_degrade_percents" ], ],
