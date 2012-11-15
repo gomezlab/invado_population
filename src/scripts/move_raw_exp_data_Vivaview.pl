@@ -79,10 +79,13 @@ for (@src_files) {
 	}
 }
 
+#Confirm that each of the stage hashes are the same size
 foreach (keys %sample_sets) {
 	&confirm_stage_hash(%{$sample_sets{$_}});
 }
 
+#Prepare the data folder and move/convert all the images into the expected
+#location in the data folder
 my $data_folder = &determine_data_folder_name($opt{default_config});
 foreach my $sample_num (sort keys %sample_sets) {
 	my %stage_position_sets = %{$sample_sets{$sample_num}};
