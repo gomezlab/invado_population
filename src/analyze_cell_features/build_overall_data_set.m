@@ -24,10 +24,19 @@ if (isempty(fields))
     disp('Expected to find directories for the fields, did you provide the correct directory?');
     return;
 end
+raw_data = struct('tracking',[],'field_number',[],'cell_number',[]);
 
-raw_data = struct('active_degrade',[],'longevity',[],'tracking',[], ...
-    'gel_minus_surrounding',[],'corrected_final_diff',[],'field_number',[],...
-    'cell_number',[],'cell_speed',[],'degradation_area',[]);
+prop_type_files = struct('active_degrade','active_degrade.csv', ...
+    'longevity','longevity.csv', ...
+    'degradation_area','degradation_area.csv',...
+    'degradation_overall_rate','degradation_overall_rate.csv',...
+    'degradation_rate_over_four','degradation_rate_over_four.csv',...
+    'corrected_final_diff','corrected_final_gel_diffs.csv');
+prop_names = fieldnames(prop_type_files);
+
+time_series_files = struct('gel_diff_minus_surround','Gel_diff_minus_surrounding.csv',...
+    'cell_speed','Cell_speed.csv');
+ts_prop_names = fieldnames(time_series_files);
 
 for j=1:length(fields)
     props_base = fullfile(exp_dir,fields(j).name,'cell_props');
@@ -38,29 +47,29 @@ for j=1:length(fields)
         continue;
     end
     
-    degrade_data = csvread(fullfile(props_base,'active_degrade.csv'));
-    raw_data.active_degrade = [raw_data.active_degrade; degrade_data];
+    for prop=prop_names'
+        prop = char(prop);
+        if (isfield(raw_data,prop))
+            raw_data.(prop) = [raw_data.(prop); csvread(fullfile(props_base,prop_type_files.(prop)))];
+        else
+            raw_data.(prop) = csvread(fullfile(props_base,prop_type_files.(prop)));
+        end
+    end
     
-    longev_data = csvread(fullfile(props_base,'longevity.csv'));
-    raw_data.longevity = [raw_data.longevity;longev_data];
-
-    degradation_area = csvread(fullfile(props_base,'degradation_area.csv'));
-    raw_data.degradation_area = [raw_data.degradation_area;degradation_area];
+    for prop=ts_prop_names'
+        prop = char(prop);
+        if (isfield(raw_data,prop))
+            raw_data.(prop) = [raw_data.(prop); csvread(fullfile(props_base,'lin_time_series',time_series_files.(prop)))];
+        else
+            raw_data.(prop) = csvread(fullfile(props_base,'lin_time_series',time_series_files.(prop)));
+        end
+    end
     
-    gel_minus = csvread(fullfile(props_base,'lin_time_series','Gel_diff_minus_surrounding.csv'));
-    raw_data.gel_minus_surrounding = [raw_data.gel_minus_surrounding;gel_minus];    
-
-    cell_speed = csvread(fullfile(props_base,'lin_time_series','Cell_speed.csv'));
-    raw_data.cell_speed = [raw_data.cell_speed;cell_speed];    
-  
-    corrected_final_diff = csvread(fullfile(props_base,'corrected_final_gel_diffs.csv'));
-    raw_data.corrected_final_diff = [raw_data.corrected_final_diff;corrected_final_diff];    
+    tracking_data = csvread(tracking_file);
+    raw_data.tracking = [raw_data.tracking; tracking_data];
     
-    tracking_data = csvread(fullfile(exp_dir,fields(j).name,'tracking_matrices','tracking_seq.csv'));
-    raw_data.tracking = [raw_data.tracking;tracking_data];
-    
-    raw_data.field_number = [raw_data.field_number;j*ones(size(tracking_data,1),1)];
-    raw_data.cell_number = [raw_data.cell_number;(1:size(tracking_data,1))'];
+    raw_data.field_number = [raw_data.field_number; j*ones(size(tracking_data,1),1)];
+    raw_data.cell_number = [raw_data.cell_number; (1:size(tracking_data,1))'];
 end
 
 longev_filter = raw_data.longevity > i_p.Results.min_longevity;
@@ -83,7 +92,8 @@ csvwrite(fullfile(output_dir,'has_degraded.csv'),processed_data.has_degraded);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 out_file = fullfile(output_dir,'single_cell_properties.csv');
 header_vals = {'field_number','cell_number','percent_matrix_degraded', ...
-    'average_cell_speed','median_cell_speed','degradation_area'};
+    'average_cell_speed','median_cell_speed','degradation_area', ...
+    'degradation_overall_rate','degrader'};
 
 fid = fopen(out_file,'wt');
 for i = 1:length(header_vals)
@@ -97,17 +107,18 @@ fclose(fid);
 
 property_matrix = [processed_data.field_number,processed_data.cell_number, ...
     processed_data.corrected_final_diff,processed_data.average_cell_speed, ...
-    processed_data.median_cell_speed,processed_data.degradation_area];
+    processed_data.median_cell_speed,processed_data.degradation_area,...
+    processed_data.degradation_overall_rate,processed_data.ever_degrade'];
 
 dlmwrite(out_file,property_matrix,'-append');
 
 csvwrite(fullfile(output_dir,'live_cells_per_image.csv'),processed_data.live_cells_per_image);
-csvwrite(fullfile(output_dir,'gel_minus_surrounding.csv'),processed_data.gel_minus_surrounding);
+csvwrite(fullfile(output_dir,'gel_minus_surrounding.csv'),processed_data.gel_diff_minus_surround);
+csvwrite(fullfile(output_dir,'corrected_final_diff.csv'),processed_data.corrected_final_diff);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Output of Degrader Properties
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-degrade_indexes = find(processed_data.ever_degrade);
 if (not(exist(fullfile(output_dir,'degrader'),'dir')))
     mkdir(fullfile(output_dir,'degrader'));
 end
@@ -116,8 +127,6 @@ end
 %All property file output
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 out_file = fullfile(output_dir,'degrader','single_cell_properties.csv');
-header_vals = {'field_number','cell_number','percent_matrix_degraded', ...
-    'average_cell_speed','median_cell_speed','degradation_area'};
 
 fid = fopen(out_file,'wt');
 for i = 1:length(header_vals)
@@ -129,13 +138,9 @@ for i = 1:length(header_vals)
 end
 fclose(fid);
 
-property_matrix = [processed_data.field_number,processed_data.cell_number, ...
-    processed_data.corrected_final_diff,processed_data.average_cell_speed, ...
-    processed_data.median_cell_speed,processed_data.degradation_area];
+degrader_property_matrix = property_matrix(logical(processed_data.ever_degrade),:);
 
-property_matrix = property_matrix(degrade_indexes,:);
-
-dlmwrite(out_file,property_matrix,'-append');
+dlmwrite(out_file,degrader_property_matrix,'-append');
 
 
 function processed_data = process_raw_data(raw_data,varargin)
@@ -175,6 +180,7 @@ processed_data.ever_degrade = [];
 for i=1:size(raw_data.active_degrade,1)
     processed_data.ever_degrade = [processed_data.ever_degrade, any(raw_data.active_degrade(i,:))];
 end
+1;
 
 processed_data.has_degraded = zeros(size(raw_data.active_degrade));
 for i=1:size(raw_data.active_degrade,1)
