@@ -158,13 +158,14 @@ if (not($opt{debug})) {
 	my $td = timediff($t_bsub, $t1);
 	
 	my $time_diff_str = "\"Took:" . timestr($td) . "\"";
-
+	
+	my $command;
 	if ($opt{sync}) {
 		$command = "results/sync_to.pl -server $opt{sync}";
 		system($command);
 	}
 	
-	my $command = "bsub -J \"Job Finished: $opt{cfg}\" echo $time_diff_str";
+	$command = "bsub -J \"Job Finished: $opt{cfg}\" echo $time_diff_str";
 	if (not $opt{no_email}) {
 		system($command) if $opt{lsf};
 	}
