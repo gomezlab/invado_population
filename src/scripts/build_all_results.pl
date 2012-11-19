@@ -77,7 +77,7 @@ my @skip_check = qw(find_median_images find_exp_min_max
 	find_full_exp_degrade_percents collect_montage_visualizations
 	gather_tracking_results find_invading_cells track_cells
 	build_single_cell_montage flat_field_correct_images
-	find_cell_degrade_amount);
+	find_cell_degrade_amount measure_degradation_time_series);
 
 my $cfg_suffix = basename($opt{cfg});
 $cfg_suffix =~ s/.*\.(.*)/$1/;
@@ -159,14 +159,14 @@ if (not($opt{debug})) {
 	
 	my $time_diff_str = "\"Took:" . timestr($td) . "\"";
 
-	my $command = "bsub -J \"Job Finished: $opt{cfg}\" echo $time_diff_str";
-	
-	if (not $opt{no_email}) {
-		system($command) if $opt{lsf};
-	}
 	if ($opt{sync}) {
 		$command = "results/sync_to.pl -server $opt{sync}";
 		system($command);
+	}
+	
+	my $command = "bsub -J \"Job Finished: $opt{cfg}\" echo $time_diff_str";
+	if (not $opt{no_email}) {
+		system($command) if $opt{lsf};
 	}
 }
 
