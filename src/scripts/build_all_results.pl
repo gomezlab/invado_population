@@ -74,7 +74,7 @@ my @overall_command_seq = (
 my @run_only_once = qw(run_matlab_over_experiment);
 
 my @skip_check = qw(find_median_images find_exp_min_max
-	find_full_exp_degrade_percents collect_montage_visualizations
+	build_overall_data_set collect_montage_visualizations
 	gather_tracking_results find_invading_cells track_cells
 	build_single_cell_montage flat_field_correct_images
 	find_cell_degrade_amount measure_degradation_time_series);
