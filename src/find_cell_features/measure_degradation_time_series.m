@@ -8,7 +8,8 @@ i_p = inputParser;
 
 i_p.addRequired('base_dir',@(x)exist(x,'dir') == 7);
 i_p.addParamValue('field_filter',0,@(x)isnumeric(x));
-i_p.addParamValue('min_fraction_decrease',0.2,@(x)isnumeric(x));
+i_p.addParamValue('min_fraction_decrease',0.25,@(x)isnumeric(x));
+i_p.addParamValue('time_between_images',30,@(x)isnumeric(x));
 i_p.addParamValue('debug',0,@(x)x == 1 || x == 0);
 
 i_p.parse(base_dir,varargin{:});
@@ -55,14 +56,14 @@ for i=1:length(fields)
     % Reading and Processing first image
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     gel_junk_threshold = csvread(fullfile(image_dir,single_image_folders(1).name, filenames.gel_junk_threshold));        
+    gel_junk_regions = logical(imread(fullfile(image_dir,single_image_folders(1).name,filenames.gel_junk)));
     
     first_gel_image = double(imread(fullfile(image_dir,single_image_folders(1).name,filenames.gel)));
     first_gel_image_trunc = first_gel_image;
     junk_area = first_gel_image > gel_junk_threshold | ...
         first_gel_image < 30;
     first_gel_image_trunc(junk_area) = NaN;
-    
-    gel_junk_regions = logical(imread(fullfile(image_dir,single_image_folders(1).name,filenames.gel_junk)));
+    first_gel_image_trunc(gel_junk_regions) = NaN;
     
     degraded_areas = zeros(size(first_gel_image));
     degraded_votes = zeros(size(first_gel_image));
@@ -73,7 +74,7 @@ for i=1:length(fields)
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Processing Remaining Images
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for i_num = 2:size(tracking_mat,2)
         current_dir = fullfile(image_dir,single_image_folders(i_num).name);
         data_set = read_in_file_set(current_dir,filenames);
@@ -112,12 +113,26 @@ for i=1:length(fields)
             degraded_areas_labeled(this_cell_degrade) = cell_num;
         end
     end
-
+    
+    final_diff_image = data_set.gel_image - first_gel_image;
+    final_diff_image(gel_junk_regions) = 0;
+    final_diff_image = (final_diff_image - min(final_diff_image(:)))/range(final_diff_image(:));
+    final_highlight = create_highlighted_image(final_diff_image,degraded_areas_labeled,'mix_percent',0.5);
+    imwrite(final_highlight,fullfile(image_dir,single_image_folders(i).name,filenames.final_degrade_highlights));
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Final Results Processing and Output
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
     cumulative_degraded_area = cumsum(single_cell_degraded_area,2);
     final_degrade_area = cumulative_degraded_area(:,end);
+    max_rate_over_four = zeros(size(tracking_mat,1),1);
+    
+    longevities = sum(tracking_mat > 0,2);
+    overall_degrade_rate = final_degrade_area./longevities;
+    
+    for cell_num = 1:size(tracking_mat,1)
+        max_rate_over_four(cell_num) = max(conv(single_cell_degraded_area(cell_num,:),ones(4,1)/4));
+    end
     
     % plot(cumsum(single_cell_degraded_area,2)');
     
@@ -127,7 +142,9 @@ for i=1:length(fields)
     csvwrite(fullfile(output_dir,'area_degraded.csv'),single_cell_degraded_area);
     csvwrite(fullfile(output_dir,'cumul_area_degraded.csv'),cumulative_degraded_area);
     
-    csvwrite(fullfile(image_dir,single_image_folders(i).name,filenames.degrade_areas),final_degrade_area);
+    csvwrite(fullfile(exp_dir,'cell_props','degradation_area.csv'),final_degrade_area);
+    csvwrite(fullfile(exp_dir,'cell_props','degradation_rate_over_four.csv'),max_rate_over_four);
+    csvwrite(fullfile(exp_dir,'cell_props','degradation_overall_rate.csv'),overall_degrade_rate);
     
     disp(['Done with ', exp_dir]);
 end
