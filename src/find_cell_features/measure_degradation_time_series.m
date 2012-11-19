@@ -122,6 +122,8 @@ for i=1:length(fields)
     % plot(cumsum(single_cell_degraded_area,2)');
     
     output_dir = fullfile(image_dir,single_image_folders(i).name,filenames.lineage_dir);
+    if (not(exist(output_dir,'dir'))), mkdir(output_dir); end
+    
     csvwrite(fullfile(output_dir,'area_degraded.csv'),single_cell_degraded_area);
     csvwrite(fullfile(output_dir,'cumul_area_degraded.csv'),cumulative_degraded_area);
     
