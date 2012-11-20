@@ -1,4 +1,4 @@
-function find_full_exp_degrade_percents(exp_dir,varargin)
+function build_overall_data_set(exp_dir,varargin)
 tic;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Setup variables and parse command line
