@@ -26,7 +26,8 @@ $| = 1;
 
 my %opt;
 $opt{debug} = 0;
-GetOptions(\%opt, "cfg|c=s", "debug|d", "lsf|l", "i_name=s") or die;
+$opt{convert_to_bmp} = 0;
+GetOptions(\%opt, "cfg|c=s", "debug|d", "lsf|l", "i_name=s", "convert_to_bmp") or die;
 
 die "Can't find cfg file specified on the command line" if not exists $opt{cfg};
 die "Can't find file name to montage, expected i_name 'filename'" if not exists $opt{i_name};
@@ -78,7 +79,6 @@ my @image_dirs = <$fields[0]/individual*/*>;
 my $image_count = scalar(@image_dirs);
 
 foreach my $i_num (0..($image_count - 1)) {
-# foreach my $i_num (0) {
 	my @file_list;
 	foreach my $this_field (@fields) {
 		my @images = <$this_field/individual*/*/$opt{i_name}.png>;
@@ -91,12 +91,10 @@ foreach my $i_num (0..($image_count - 1)) {
 	mkpath("$output_folder/$opt{i_name}");
 	
 	my $out_file_png = "$output_folder/$opt{i_name}/" . sprintf("%02d",$i_num+1) . ".png";
-	my $out_file_bmp = "$output_folder/$opt{i_name}/" . sprintf("%02d",$i_num+1) . ".bmp";
 	
 	my $extra;
 
 	my $command = "montage " . join(" ", @file_list) . " -geometry x160+0+0 -tile 5x5 $out_file_png";
-	
 	if ($opt{debug}) {
 		print "$command\n";
 	} else {
@@ -104,24 +102,21 @@ foreach my $i_num (0..($image_count - 1)) {
 	}
 	
 	if (@level_norms) {
-		my $command = "convert $out_file_png -level $level_norms[0],$level_norms[1] $out_file_png; convert $out_file_png $out_file_bmp;";
-		if ($opt{debug}) {
-			print "$command\n";
-		} else {
-			system($command);
-		}
-	} else {
-		my $command = "convert $out_file_png $out_file_bmp";
+		my $command = "convert $out_file_png -level $level_norms[0],$level_norms[1] $out_file_png;";
 		if ($opt{debug}) {
 			print "$command\n";
 		} else {
 			system($command);
 		}
 	}
-	my $command = "rm $out_file_png";
-	if ($opt{debug}) {
-		print "$command\n";
-	} else {
-		system($command);
+
+	my $out_file_bmp = "$output_folder/$opt{i_name}/" . sprintf("%02d",$i_num+1) . ".bmp";
+	if ($opt{convert_to_bmp}) {
+		my $command = "convert $out_file_png $out_file_bmp; rm $out_file_png;";
+		if ($opt{debug}) {
+			print "$command\n";
+		} else {
+			system($command);
+		}
 	}
 }
