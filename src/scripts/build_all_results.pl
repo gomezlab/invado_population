@@ -51,22 +51,22 @@ $|  = 1;
 #layer holds all of those commands with the appropriate directory to execute the
 #commands in.
 my @overall_command_seq = (
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_median_images" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script flat_field_correct_images" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_exp_min_max" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_cell_mask_experiment" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script apply_bleaching_correction" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_exp_min_max" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_cell_mask_properties_experiment" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script track_cells_experiment" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script find_cell_degrade_amount" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script measure_degradation_time_series" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script ../analyze_cell_features/gather_tracking_results_experiment" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script ../analyze_cell_features/find_invading_cells_experiment" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script ../analyze_cell_features/build_overall_data_set.m" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script ../visualize_cell_features/build_single_cell_montage_experiment" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script ../visualize_cell_features/create_invader_visualization" ], ],
-	[ [ "../find_cell_features",      "./run_matlab_over_experiment.pl -script ../visualize_cell_features/make_tracking_visualization" ], ],
+	[ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_median_images" ], ],
+	# [ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/flat_field_correct_images" ], ],
+	# [ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_exp_min_max" ], ],
+	# [ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_cell_mask_experiment" ], ],
+	# [ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/apply_bleaching_correction" ], ],
+	# [ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_exp_min_max" ], ],
+	# [ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_cell_mask_properties_experiment" ], ],
+	# [ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/track_cells_experiment" ], ],
+	# [ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_cell_degrade_amount" ], ],
+	# [ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/measure_degradation_time_series" ], ],
+	# [ [ ".", "./run_matlab_over_experiment.pl -script ../analyze_cell_features/gather_tracking_results_experiment" ], ],
+	# [ [ ".", "./run_matlab_over_experiment.pl -script ../analyze_cell_features/find_invading_cells_experiment" ], ],
+	# [ [ ".", "./run_matlab_over_experiment.pl -script ../analyze_cell_features/build_overall_data_set.m" ], ],
+	# [ [ ".", "./run_matlab_over_experiment.pl -script ../visualize_cell_features/build_single_cell_montage_experiment" ], ],
+	# [ [ ".", "./run_matlab_over_experiment.pl -script ../visualize_cell_features/create_invader_visualization" ], ],
+	# [ [ ".", "./run_matlab_over_experiment.pl -script ../visualize_cell_features/make_tracking_visualization" ], ],
 );
 
 #some of the scripts only need to be run once for each experiment, this will
