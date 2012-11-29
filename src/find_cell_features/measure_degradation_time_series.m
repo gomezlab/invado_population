@@ -7,9 +7,11 @@ tic;
 i_p = inputParser;
 
 i_p.addRequired('base_dir',@(x)exist(x,'dir') == 7);
+
 i_p.addParamValue('field_filter',0,@(x)isnumeric(x));
 i_p.addParamValue('min_fraction_decrease',0.25,@(x)isnumeric(x));
 i_p.addParamValue('time_between_images',30,@(x)isnumeric(x));
+i_p.addParamValue('sequential_images',false,@(x)isnumeric(x));
 i_p.addParamValue('debug',0,@(x)x == 1 || x == 0);
 
 i_p.parse(base_dir,varargin{:});
@@ -53,11 +55,11 @@ for i=1:length(fields)
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Reading and Processing first image
+    % Reading and Processing First Image
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     gel_junk_threshold = csvread(fullfile(image_dir,single_image_folders(1).name, filenames.gel_junk_threshold));        
     gel_junk_regions = logical(imread(fullfile(image_dir,single_image_folders(1).name,filenames.gel_junk)));
-    
+
     first_gel_image = double(imread(fullfile(image_dir,single_image_folders(1).name,filenames.gel)));
     first_gel_image_trunc = first_gel_image;
     junk_area = first_gel_image > gel_junk_threshold | ...
@@ -71,7 +73,19 @@ for i=1:length(fields)
     degraded_areas_labeled = zeros(size(first_gel_image));
     
     single_cell_degraded_area = zeros(size(tracking_mat));
+    
+    cell_colors = lines(size(tracking_mat,1));
 
+    if (i_p.Results.sequential_images)
+        current_dir = fullfile(image_dir,single_image_folders(1).name);
+        data_set = read_in_file_set(current_dir,filenames);
+        
+        gel_image_trunc_norm = data_set.gel_image_norm;
+        gel_image_trunc_norm(gel_junk_regions) = 0;
+        degrade_so_far_highlight = create_highlighted_image(gel_image_trunc_norm, ...
+            degraded_areas_labeled,'color_map',cell_colors,'mix_percent',0.5);
+        imwrite(degrade_so_far_highlight,fullfile(current_dir,'degrade_highlight.png'));
+    end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Processing Remaining Images
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -94,15 +108,6 @@ for i=1:length(fields)
         
         degraded_areas = degraded_areas | degraded_area_so_far;
         
-        %Debugging images
-%         gel_image_trunc_norm = data_set.gel_image_norm;
-%         gel_image_trunc_norm(isnan(gel_image_trunc)) = 0;
-%         temp = degraded_areas;
-%         temp(new_degrade) = 2;
-%         close;
-%         imshow(create_highlighted_image(gel_image_trunc_norm,temp,'mix_percent',1));
-%         pause(0.1);        
-
         for cell_num = 1:size(tracking_mat,1)
             %zeros in the tracking mat indicate no cell
             if (tracking_mat(cell_num,i_num) == 0)
@@ -112,12 +117,20 @@ for i=1:length(fields)
             single_cell_degraded_area(cell_num,i_num) = sum(this_cell_degrade(:));
             degraded_areas_labeled(this_cell_degrade) = cell_num;
         end
+
+        if (i_p.Results.sequential_images)
+            gel_image_trunc_norm = data_set.gel_image_norm;
+            gel_image_trunc_norm(gel_junk_regions) = 0;
+            degrade_so_far_highlight = create_highlighted_image(gel_image_trunc_norm, ...
+                degraded_areas_labeled,'color_map',cell_colors,'mix_percent',0.5);
+            imwrite(degrade_so_far_highlight,fullfile(current_dir,'degrade_highlight.png'));
+        end
     end
     
     final_diff_image = data_set.gel_image - first_gel_image;
     final_diff_image(gel_junk_regions) = 0;
     final_diff_image = (final_diff_image - min(final_diff_image(:)))/range(final_diff_image(:));
-    final_highlight = create_highlighted_image(final_diff_image,degraded_areas_labeled,'mix_percent',0.5);
+    final_highlight = create_highlighted_image(final_diff_image,degraded_areas_labeled,'mix_percent',0.5,'color_map',cell_colors);
     imwrite(final_highlight,fullfile(image_dir,single_image_folders(i).name,filenames.final_degrade_highlights));
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
