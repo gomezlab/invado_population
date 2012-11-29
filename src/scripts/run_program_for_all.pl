@@ -55,7 +55,7 @@ if ($opt{no_parallel}) {
 } else {
 	$parallel_return = system("which parallel");
 }
-my $ionice_return = system("ionice -c3 ls");
+my $ionice_return = system("ionice -c3 ls > /dev/null");
 
 my @command_set;
 foreach (@config_files) {
@@ -64,9 +64,9 @@ foreach (@config_files) {
     my $command = "nice -n 20 ./$program_base -cfg $_ $debug_string $opt{extra}";
 
 	if ($ionice_return == 0) {
-		$command .= "ionice -c3 ";
+		$command = "ionice -c3 " . $command;
 	}
-
+	
     $command =~ s/"/\\"/g;
     push @command_set, "\"$command; echo $_;\"";
 	if ($parallel_return != 0) {
