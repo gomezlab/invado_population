@@ -67,13 +67,15 @@ my $output_folder = "$cfg{exp_results_folder}/../montage/";
 mkpath($output_folder);
 
 my @fields = <$cfg{exp_results_folder}/../time_series*>;
-@fields = @fields[
+my @field_order = (
 	4,5,14,15,24,
 	3,6,13,16,23,
 	2,7,12,17,22,
 	1,8,11,18,21,
 	0,9,10,19,20,
-	];
+	);
+
+@fields = @fields[@field_order];
 
 my @image_dirs = <$fields[0]/individual*/*>;
 my $image_count = scalar(@image_dirs);
@@ -100,7 +102,7 @@ foreach my $i_num (0..($image_count - 1)) {
 	} else {
 		system($command);
 	}
-	
+
 	if (@level_norms) {
 		my $command = "convert $out_file_png -level $level_norms[0],$level_norms[1] $out_file_png;";
 		if ($opt{debug}) {
@@ -109,7 +111,28 @@ foreach my $i_num (0..($image_count - 1)) {
 			system($command);
 		}
 	}
-
+	
+	#Add field number annotation to the first image
+	if ($i_num == 0) {
+		my $annotate_set = "";
+		my $x_gap = 210;
+		my $y_gap = 160;
+		my @x_pos = (5 + $x_gap*0,5 + $x_gap*1,5 + $x_gap*2,5 + $x_gap*3,5 + $x_gap*4) x 5;
+		my @y_pos = ((15+$y_gap*0) x 5, (15+$y_gap*1) x 5, (15+$y_gap*2) x 5,
+			(15+$y_gap*3) x 5, (15+$y_gap*4) x 5);
+		for my $i (0..$#field_order) {
+			my $field_num = $field_order[$i] + 1;
+			$annotate_set .= "-annotate +$x_pos[$i]+$y_pos[$i] $field_num ";
+		}
+		
+		my $command = "convert $out_file_png -pointsize 16 $annotate_set $out_file_png;";
+		if ($opt{debug}) {
+			print "$command\n";
+		} else {
+			system($command);
+		}
+	}
+	
 	my $out_file_bmp = "$output_folder/$opt{i_name}/" . sprintf("%02d",$i_num+1) . ".bmp";
 	if ($opt{convert_to_bmp}) {
 		my $command = "convert $out_file_png $out_file_bmp; rm $out_file_png;";

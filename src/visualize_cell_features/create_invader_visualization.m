@@ -29,9 +29,8 @@ if (not(any(strcmp('field_filter',i_p.UsingDefaults))))
     fields = fields(i_p.Results.field_filter);
 end
 
-for i=1:length(fields)
-    
-    exp_dir = fullfile(base_dir,fields(i).name);
+for field_num=1:length(fields)
+    exp_dir = fullfile(base_dir,fields(field_num).name);
     image_dir = fullfile(exp_dir,'individual_pictures');
     single_image_dirs = dir(image_dir);
     
@@ -153,8 +152,8 @@ for i=1:length(fields)
         for cell_num = 1:length(gel_diff_percent)
             cell_id = find(tracking_col == cell_num);
             pos_str = [' +',num2str(centroid(cell_num,1)),'+',num2str(centroid(cell_num,2))];
-            top_line = sprintf('%d/%d',cell_id, ...
-                area(cell_num));
+            top_line = sprintf('%d/%d', cell_id, area(cell_num));
+            
             label_str = [' "', top_line,' \n', ...
                 sprintf('%.2f%',gel_diff_percent(cell_num)),' \n', ...
                 sprintf('%.2f%',raw_data.corrected_final_gel_diffs(cell_id)),'"'];
