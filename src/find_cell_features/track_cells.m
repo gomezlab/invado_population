@@ -1,6 +1,4 @@
 function track_cells(exp_dir,varargin)
-%CREATE_CELL_MASK_IMAGE   Gather and write the cell mask from a
-%                         fluorescence image
 tic;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Setup variables and parse command line

@@ -298,10 +298,6 @@ prior_props = regionprops(prior_data.labeled_cells,'Centroid','Area');
 %%Main Program
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if (all(current_data.gel_image(:) == prior_data.gel_image(:)) == 1)
-    return;
-end
-
 for i=1:max(prior_data.labeled_cells(:))
     for j=1:max(current_data.labeled_cells(:))
         prior_props(i).Cent_dist(j) = sqrt((current_props(j).Centroid(1) - prior_props(i).Centroid(1))^2 + ...
