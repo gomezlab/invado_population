@@ -9,7 +9,6 @@ use File::Basename;
 use File::Spec::Functions;
 use File::Copy;
 use File::Temp;
-# use POSIX;
 use CGI;
 use CGI::Carp;
 use IO::Handle;
@@ -19,10 +18,11 @@ use Cwd;
 $| = 1;
 
 my $output_folder = "/var/www/metamorph_grid/";
-my $webserver = "http://snotra.bme.unc.edu/metamorph_grid/";
+my $webserver = "http://$ENV{SERVER_NAME}/metamorph_grid/";
 
 if (! -e $output_folder) {
 	mkpath($output_folder);
+	chmod 0775, $output_folder;
 	open OUTPUT, ">$output_folder/index.html" or die "$!";
 	print OUTPUT &print_auto_redirection_html();
 	close OUTPUT;
@@ -137,7 +137,7 @@ sub print_auto_redirection_html {
 	return "<!DOCTYPE html>
 	<html>
 	<head>
-	<meta http-equiv=\"Refresh\" content=\"0;url=http://snotra.bme.unc.edu/cgi-bin/metamorph_grid/webapp.pl\" />
+	<meta http-equiv=\"Refresh\" content=\"0;url=http://$ENV{SERVER_NAME}/cgi-bin/metamorph_grid/webapp.pl\" />
 	</head>
 
 	<body>
