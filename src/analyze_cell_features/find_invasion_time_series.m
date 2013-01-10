@@ -30,10 +30,10 @@ exp_dirs = filter_to_time_series(exp_dirs);
 raw_data = struct();
 for i=1:length(exp_dirs)
     files = struct();
-    files.p_vals = fullfile(results_dir,exp_dirs(i).name,'adhesion_props','lin_time_series','Cell_gel_diff_p_val.csv');
-    files.cell_diffs = fullfile(results_dir,exp_dirs(i).name,'adhesion_props','lin_time_series','Cell_gel_diff.csv');
+    files.p_vals = fullfile(results_dir,exp_dirs(i).name,'cell_props','lin_time_series','Cell_gel_diff_p_val.csv');
+    files.cell_diffs = fullfile(results_dir,exp_dirs(i).name,'cell_props','lin_time_series','Cell_gel_diff.csv');
     files.tracking = fullfile(results_dir,exp_dirs(i).name,'tracking_matrices','tracking_seq.csv');
-    files.overlap_area = fullfile(results_dir,exp_dirs(i).name,'adhesion_props','lin_time_series','Overlap_region_size.csv');
+    files.overlap_area = fullfile(results_dir,exp_dirs(i).name,'cell_props','lin_time_series','Overlap_region_size.csv');
     
     these_types = fieldnames(files);
     for j = 1:length(these_types)
