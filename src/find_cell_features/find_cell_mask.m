@@ -212,7 +212,7 @@ for i=1:max(connected_areas(:))
 end
 
 cell_nums = unique(final_connected_areas);
-assert(cell_nums(1) == 0, 'Background pixels not found after building adhesion label matrix')
+assert(cell_nums(1) == 0, 'Background pixels not found after building object label matrix')
 for i = 2:length(cell_nums)
     final_connected_areas(final_connected_areas == cell_nums(i)) = i - 1;
 end
