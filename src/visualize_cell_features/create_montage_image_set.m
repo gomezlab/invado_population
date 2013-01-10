@@ -35,12 +35,12 @@ if (isempty(strmatch('num_images', i_p.UsingDefaults)))
         elseif (strcmpi(i_p.Results.phase, 'disassembly'))
             image_set = image_set((size(image_set,2) - i_p.Results.num_images + 1):end);
         else
-            warning('FA:phaseType','Expected assembly or disassembly for phase parameter, got %s',i_p.Results.phase)
+            warning('montage:phaseType','Expected assembly or disassembly for phase parameter, got %s',i_p.Results.phase)
         end
         assert(size(image_set,2) == i_p.Results.num_images, ...
                'Problem with removing images: image_set:%d Requested Number:%d',size(image_set,2), i_p.Results.num_images)
     else
-        warning('FA:adCount','When num_images parameter specified, expected phase parameter to be set to either assembly or disassembly.')
+        warning('montage:adCount','When num_images parameter specified, expected phase parameter to be set to either assembly or disassembly.')
     end
 end
 
