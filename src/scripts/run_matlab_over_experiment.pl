@@ -18,7 +18,7 @@ use Data::Dumper;
 use Config::Adhesions;
 use Math::Matlab::Extra;
 use Emerald;
-use FA_job;
+use compute_functions;
 
 #Perl built-in variable that controls buffering print output, 1 turns off
 #buffering
@@ -67,4 +67,4 @@ if ($opt{script} =~ /find_median_images/ ||
 	$opt{M} = 16;
 }
 
-&FA_job::run_matlab_progam(\@matlab_code,\%opt);
+&compute_functions::run_matlab_progam(\@matlab_code,\%opt);

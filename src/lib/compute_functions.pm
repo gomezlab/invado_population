@@ -3,8 +3,7 @@
 ###############################################################################
 # Global Variables and Modules
 ###############################################################################
-{
-package FA_job;
+package compute_functions;
 use strict;
 use warnings;
 use File::Spec;
@@ -71,4 +70,3 @@ sub send_general_program {
 }
 
 1;
-}

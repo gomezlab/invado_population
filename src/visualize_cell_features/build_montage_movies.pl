@@ -16,9 +16,6 @@ use Getopt::Long;
 use Data::Dumper;
 
 use Config::Adhesions;
-use Math::Matlab::Extra;
-use Emerald;
-use FA_job;
 
 #Perl built-in variable that controls buffering print output, 1 turns off
 #buffering

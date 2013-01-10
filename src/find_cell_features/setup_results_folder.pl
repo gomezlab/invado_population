@@ -20,8 +20,6 @@ use Data::Dumper;
 use Config::Adhesions qw(ParseConfig);
 use Image::Stack;
 use Math::Matlab::Extra;
-use Emerald;
-use FA_job;
 
 #Perl built-in variable that controls buffering print output, 1 turns off
 #buffering
@@ -47,7 +45,6 @@ if (not $opt{debug}) {
 my @image_sets = ([qw(puncta_image_folder puncta_image_file)],
 				  [qw(gel_image_folder gel_image_file)]);
 
-my @matlab_code;
 my $all_images_empty = 1;
 
 foreach (@image_sets) {

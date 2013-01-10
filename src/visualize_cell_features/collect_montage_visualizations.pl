@@ -18,7 +18,7 @@ use Data::Dumper;
 use Config::Adhesions;
 use Math::Matlab::Extra;
 use Emerald;
-use FA_job;
+use compute_functions;
 
 #Perl built-in variable that controls buffering print output, 1 turns off
 #buffering
@@ -56,7 +56,7 @@ if (defined $cfg{job_group}) {
     $opt{job_group} = $cfg{job_group};
 }
 
-&FA_job::run_matlab_progam(\@matlab_code,\%opt);
+&compute_functions::run_matlab_progam(\@matlab_code,\%opt);
 
 ################################################################################
 #Functions
