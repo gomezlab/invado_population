@@ -17,8 +17,7 @@ use Math::Matlab::Local;
 use Getopt::Long;
 use Data::Dumper;
 
-use Config::Adhesions qw(ParseConfig);
-use Image::Stack;
+use Config::ImageSet qw(ParseConfig);
 use Math::Matlab::Extra;
 
 #Perl built-in variable that controls buffering print output, 1 turns off

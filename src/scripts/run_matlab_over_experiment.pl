@@ -15,7 +15,7 @@ use Image::ExifTool;
 use Getopt::Long;
 use Data::Dumper;
 
-use Config::Adhesions;
+use Config::ImageSet;
 use Math::Matlab::Extra;
 use Emerald;
 use compute_functions;
@@ -31,7 +31,7 @@ GetOptions(\%opt, "cfg|c=s", "script=s", "debug|d", "lsf|l", "queue=s", "resourc
 die "Can't find cfg file specified on the command line" if not exists $opt{cfg};
 die "Can't find script specified on the command line" if not exists $opt{script};
 
-my $ad_conf = new Config::Adhesions(\%opt);
+my $ad_conf = new Config::ImageSet(\%opt);
 my %cfg     = $ad_conf->get_cfg_hash;
 
 if ($opt{script} =~ /(.*)\.m/) {

@@ -15,7 +15,7 @@ use Getopt::Long;
 use Data::Dumper;
 use Text::CSV;
 
-use Config::Adhesions;
+use Config::ImageSet;
 
 #Perl built-in variable that controls buffering print output, 1 turns off
 #buffering
@@ -32,7 +32,7 @@ die "Can't find file name to montage, expected i_name 'filename'" if not exists 
 #strip off the .png if specified on the i_name parameter
 $opt{i_name} =~ s/\.png$//;
 
-my $ad_conf = new Config::Adhesions(\%opt);
+my $ad_conf = new Config::ImageSet(\%opt);
 my %cfg     = $ad_conf->get_cfg_hash;
 
 ################################################################################

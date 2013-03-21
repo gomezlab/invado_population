@@ -15,7 +15,7 @@ use Image::ExifTool;
 use Getopt::Long;
 use Data::Dumper;
 
-use Config::Adhesions;
+use Config::ImageSet;
 use Math::Matlab::Extra;
 use Emerald;
 use compute_functions;
@@ -30,7 +30,7 @@ GetOptions(\%opt, "cfg|c=s", "debug|d", "lsf|l", "queue=s", "resource|R=s") or d
 
 die "Can't find cfg file specified on the command line" if not exists $opt{cfg};
 
-my $ad_conf = new Config::Adhesions(\%opt);
+my $ad_conf = new Config::ImageSet(\%opt);
 my %cfg     = $ad_conf->get_cfg_hash;
 
 ################################################################################

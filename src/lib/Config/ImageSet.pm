@@ -3,8 +3,8 @@
 ###############################################################################
 # Global Variables and Modules
 ###############################################################################
-{
-package Config::Adhesions;
+
+package Config::ImageSet;
 use strict;
 use warnings;
 use File::Spec;
@@ -62,7 +62,7 @@ sub ParseConfig {
     
     my $cfg_ref = \%cfg;
 
-    bless $cfg_ref, "Config::Adhesions";
+    bless $cfg_ref, "Config::ImageSet";
 	
     $cfg_ref->build_derived_parameters;
     $cfg_ref->split_config_variables;
@@ -114,5 +114,4 @@ sub get_cfg_hash {
     return map { $_ => ${$self}{$_} } keys %{$self};
 }
 
-}
 1;

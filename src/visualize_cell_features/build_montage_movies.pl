@@ -15,7 +15,7 @@ use Image::ExifTool;
 use Getopt::Long;
 use Data::Dumper;
 
-use Config::Adhesions;
+use Config::ImageSet;
 
 #Perl built-in variable that controls buffering print output, 1 turns off
 #buffering
@@ -27,7 +27,7 @@ GetOptions(\%opt, "cfg|c=s", "debug|d", "lsf|l") or die;
 
 die "Can't find cfg file specified on the command line" if not exists $opt{cfg};
 
-my $ad_conf = new Config::Adhesions(\%opt);
+my $ad_conf = new Config::ImageSet(\%opt);
 my %cfg     = $ad_conf->get_cfg_hash;
 
 ################################################################################

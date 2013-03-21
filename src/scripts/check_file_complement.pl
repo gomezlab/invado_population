@@ -16,7 +16,7 @@ use File::Copy;
 use Getopt::Long;
 use Data::Dumper;
 
-use Config::Adhesions qw(ParseConfig);
+use Config::ImageSet qw(ParseConfig);
 
 #Perl built-in variable that controls buffering print output, 1 turns off
 #buffering

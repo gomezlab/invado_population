@@ -18,7 +18,7 @@ use Cwd;
 use Data::Dumper;
 use POSIX;
 
-use Config::Adhesions qw(ParseConfig);
+use Config::ImageSet qw(ParseConfig);
 
 my %opt;
 $opt{debug} = 0;
