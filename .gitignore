@@ -1,0 +1,33 @@
+
+# /
+/results
+/doc
+
+# /data/
+/data/*
+
+# /src/
+/src/tmp
+
+# /src/analyze_cell_features/
+/src/analyze_cell_features/tmp*
+/src/analyze_cell_features/.*
+
+# /src/find_cell_features/
+/src/find_cell_features/tmp*
+
+# /src/lib/
+/src/lib/perl
+
+# /src/scripts/
+/src/scripts/tmp*
+/src/scripts/*.txt
+
+# /src/scripts/metamorph_grid/
+/src/scripts/metamorph_grid/*.STG
+/src/scripts/metamorph_grid/*.csv
+/src/scripts/metamorph_grid/temp_files
+
+# /src/visualize_cell_features/
+/src/visualize_cell_features/tmp*
+/src/visualize_cell_features/convert
