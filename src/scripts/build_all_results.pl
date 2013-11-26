@@ -51,22 +51,22 @@ $|  = 1;
 #layer holds all of those commands with the appropriate directory to execute the
 #commands in.
 my @overall_command_seq = (
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_median_images" ], ],
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/flat_field_correct_images" ], ],
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_exp_min_max" ], ],
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_cell_mask_experiment" ], ],
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/apply_bleaching_correction" ], ],
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_exp_min_max" ], ],
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_cell_mask_properties_experiment" ], ],
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/track_cells_experiment" ], ],
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_cell_degrade_amount" ], ],
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/measure_degradation_time_series" ], ],
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../analyze_cell_features/gather_tracking_results_experiment" ], ],
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../analyze_cell_features/find_invading_cells_experiment" ], ],
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../analyze_cell_features/build_overall_data_set.m" ], ],
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../visualize_cell_features/build_single_cell_montage_experiment" ], ],
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../visualize_cell_features/create_invader_visualization" ], ],
-	[ [ ".", "./run_matlab_over_experiment.pl -script ../visualize_cell_features/make_tracking_visualization" ], ],
+	[ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_median_images" ],
+	[ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/flat_field_correct_images" ],
+	[ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_exp_min_max" ],
+	[ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_cell_mask_experiment" ],
+	[ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/apply_bleaching_correction" ],
+	[ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_exp_min_max" ], 
+	[ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_cell_mask_properties_experiment" ],
+	[ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/track_cells_experiment" ],
+	[ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/find_cell_degrade_amount" ],
+	[ ".", "./run_matlab_over_experiment.pl -script ../find_cell_features/measure_degradation_time_series" ],
+	[ ".", "./run_matlab_over_experiment.pl -script ../analyze_cell_features/gather_tracking_results_experiment" ], 
+	[ ".", "./run_matlab_over_experiment.pl -script ../analyze_cell_features/find_invading_cells_experiment" ], 
+	[ ".", "./run_matlab_over_experiment.pl -script ../analyze_cell_features/build_overall_data_set.m" ], 
+	[ ".", "./run_matlab_over_experiment.pl -script ../visualize_cell_features/build_single_cell_montage_experiment" ], 
+	[ ".", "./run_matlab_over_experiment.pl -script ../visualize_cell_features/create_invader_visualization" ], 
+	[ ".", "./run_matlab_over_experiment.pl -script ../visualize_cell_features/make_tracking_visualization" ], 
 );
 
 #some of the scripts only need to be run once for each experiment, this will
@@ -99,9 +99,9 @@ my $starting_dir = getcwd;
 for (@overall_command_seq) {
 	my $command_start_bench = new Benchmark;
 	my @command_seq = @{$_};
-	@command_seq = map { [ $_->[0], $_->[1] . " -lsf" ] } @command_seq if $opt{lsf};
-	print "Starting on $command_seq[0][1]\n";
-	if (grep $command_seq[0][1] =~ /$_/, @run_only_once) {
+	@command_seq = map { $_->[0], $_->[1] . " -lsf" } @command_seq if $opt{lsf};
+	print "Starting on $command_seq[1]\n";
+	if (grep $command_seq[1] =~ /$_/, @run_only_once) {
 		&execute_command_seq(\@command_seq, $starting_dir,\@run_once_configs);
 	} else {
 		&execute_command_seq(\@command_seq, $starting_dir);
@@ -110,8 +110,8 @@ for (@overall_command_seq) {
 	#If debugging is not on, we want to wait till the current jobs finish
 	#and then check the file complements of the experiments for completeness
 	my $LSF_was_run = &wait_till_LSF_jobs_finish if ($opt{lsf} && not($opt{debug}));
-	if (not($opt{debug}) && $LSF_was_run && not(grep $command_seq[0][1] =~ /$_/, @skip_check)) {
-		print "Checking for all output files on command $command_seq[0][1]\n";
+	if (not($opt{debug}) && $LSF_was_run && not(grep $command_seq[1] =~ /$_/, @skip_check)) {
+		print "Checking for all output files on command $command_seq[1]\n";
 		my %exp_sets = &check_file_sets(\@config_files);
 
 		for (1..2) {
@@ -187,41 +187,39 @@ sub execute_command_seq {
         @these_config_files = @{$_[2]};
     }
 	
-    foreach my $set (@command_seq) {
-        my $dir     = $set->[0];
-        my $command = $set->[1];
-        my $executed_scripts_count = 0;
-        foreach my $cfg_file (@these_config_files) {
-            my $config_command = "$command -cfg $cfg_file";
-            chdir $dir;
-            my $return_code = 0;
-			$executed_scripts_count++;
-			print "Done submitting: " if $executed_scripts_count == 1;
-            
-			if ($opt{debug}) {
-                print $config_command, "\n";
-            } else {
-                $return_code = system($config_command);
-				if ($return_code) {
-                	print "PROBLEM WITH: $config_command\n";
-					print "RETURN CODE: $return_code\n";
-				}
-				if ($executed_scripts_count % ceil(scalar(@these_config_files)/10) == 0) {
-					print sprintf('%.0f%% ',100*($executed_scripts_count/scalar(@these_config_files)));
-				}
-            }
-            chdir $starting_dir;
+	my $dir     = $command_seq[0];
+	my $command = $command_seq[1];
+	my $executed_scripts_count = 0;
+	foreach my $cfg_file (@these_config_files) {
+		my $config_command = "$command -cfg $cfg_file";
+		chdir $dir;
+		my $return_code = 0;
+		$executed_scripts_count++;
+		print "Done submitting: " if $executed_scripts_count == 1;
 
-            #if the return code was any number beside zero, indicating a problem
-            #with the program exit, remove that config file from the run and
-            #continue
-            if ($return_code) {
-				print "REMOVING: $cfg_file\n";
-                @config_files = grep $cfg_file ne $_, @config_files;
-            }
-        }
-		print "\n";
-    }
+		if ($opt{debug}) {
+			print $config_command, "\n";
+		} else {
+			$return_code = system($config_command);
+			if ($return_code) {
+				print "PROBLEM WITH: $config_command\n";
+				print "RETURN CODE: $return_code\n";
+			}
+			if ($executed_scripts_count % ceil(scalar(@these_config_files)/10) == 0) {
+				print sprintf('%.0f%% ',100*($executed_scripts_count/scalar(@these_config_files)));
+			}
+		}
+		chdir $starting_dir;
+
+		#if the return code was any number beside zero, indicating a problem
+		#with the program exit, remove that config file from the run and
+		#continue
+		if ($return_code) {
+			print "REMOVING: $cfg_file\n";
+			@config_files = grep $cfg_file ne $_, @config_files;
+		}
+	}
+	print "\n";
 }
 
 #######################################
