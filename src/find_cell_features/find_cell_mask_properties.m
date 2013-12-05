@@ -96,6 +96,11 @@ for i_num = 1:size(image_dirs,1)
     end
 end
 
+target_dir = fileparts(fullfile(base_dir,image_dirs(1).name,filenames.tracking_raw));
+if (not(exist(target_dir)))
+    mkdir(target_dir);
+end
+
 save(fullfile(base_dir,image_dirs(1).name,filenames.tracking_raw),'all_tracking_props');
 save(fullfile(base_dir,image_dirs(1).name,filenames.cell_props),'all_cell_props');
 toc;
