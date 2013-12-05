@@ -34,6 +34,10 @@ my %cfg = ParseConfig(\%opt);
 ###############################################################################
 #Main Program
 ###############################################################################
+
+###########################################################
+# Config File Search
+###########################################################
 chdir(dirname($opt{program}));
 
 my $program_base = basename($opt{program});
@@ -45,10 +49,14 @@ $cfg_suffix =~ s/.*\.(.*)/$1/;
 
 my @config_files = File::Find::Rule->file()->name( "*.$cfg_suffix" )->in( ($cfg{data_folder}) );
 @config_files = reverse sort @config_files;
+@config_files = grep !($_ =~ /config/), @config_files;
 if (exists($opt{exp_filter})) {
    @config_files = grep $_ =~ /$opt{exp_filter}/, @config_files;
 }
 
+###########################################################
+# Check for Available Commands
+###########################################################
 my $parallel_return;
 if ($opt{no_parallel}) {
 	$parallel_return = 1;
@@ -57,6 +65,9 @@ if ($opt{no_parallel}) {
 }
 my $ionice_return = system("ionice -c3 ls > /dev/null");
 
+###########################################################
+# Run Program
+###########################################################
 my @command_set;
 foreach (@config_files) {
     next if /config\/default/;
