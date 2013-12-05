@@ -9,6 +9,7 @@ i_p = inputParser;
 i_p.addRequired('base_dir',@(x)exist(x,'dir') == 7);
 
 i_p.addOptional('debug',0,@(x)x == 1 | x == 0);
+i_p.addOptional('diagnostic_plot',0,@(x)x == 1 | x == 0);
 i_p.parse(base_dir,varargin{:});
 
 %Add the folder with all the scripts used in this master program
@@ -59,7 +60,7 @@ for field_num = 1:length(fields)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Correct the Intensity
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    gel_junk_threshold = csvread(fullfile(image_dir,single_image_folders(1).name, filenames.gel_junk_threshold));    
+    gel_junk_threshold = csvread(fullfile(image_dir,single_image_folders(1).name, filenames.gel_junk_threshold));
     
     any_gel_junk_regions = zeros(size(no_cell_regions));
     
@@ -92,19 +93,21 @@ for field_num = 1:length(fields)
     % end
     
     %diagnostic plot
-    time_points = (0:(length(gel_levels) - 1))*0.5;
-    diag_fig_hnd = plot(time_points,gel_levels);
-    xlabel('Time', 'Fontsize',16)
-    ylabel('Average Intensity', 'Fontsize',16);
-    hold on;
-    plot(time_points,gel_levels_outside_cell,'r');
-    plot(time_points,gel_levels_final,'k');
-    y_limits = ylim();
-    ylim([0 y_limits(2)]);
-    
-    legend('Overall','Outside Cell', 'location','SouthEast')
-    saveas(diag_fig_hnd,fullfile(output_dir,'bleaching_curves.png'))
-    close all;
+    if (i_p.Results.diagnostic_plot)
+        time_points = (0:(length(gel_levels) - 1))*0.5;
+        diag_fig_hnd = plot(time_points,gel_levels);
+        xlabel('Time', 'Fontsize',16);
+        ylabel('Average Intensity', 'Fontsize',16);
+        hold on;
+        plot(time_points,gel_levels_outside_cell,'r');
+        plot(time_points,gel_levels_final,'k');
+        y_limits = ylim();
+        ylim([0 y_limits(2)]);
+        
+        legend('Overall','Outside Cell', 'location','SouthEast')
+        saveas(diag_fig_hnd,fullfile(output_dir,'bleaching_curves.png'))
+        close all;
+    end
     
     dlmwrite(fullfile(output_dir,'bleaching_curves.csv'), ...
         [gel_levels_outside_cell,gel_levels]);
