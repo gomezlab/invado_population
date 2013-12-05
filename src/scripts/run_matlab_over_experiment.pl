@@ -55,7 +55,7 @@ if ($opt{script} =~ /flat_field_correct/) {
 my @matlab_code;
 @matlab_code = ("$opt{script}('" . dirname($cfg{exp_results_folder}) . "'$extra)\n");
 
-$opt{error_folder} = catdir($cfg{exp_results_folder}, $cfg{errors_folder}, $opt{script});
+$opt{error_folder} = catdir($cfg{exp_results_folder}, "errors", $opt{script});
 $opt{error_file} = catfile($opt{error_folder}, 'error.txt');
 $opt{runtime} = "1";
 if (defined $cfg{job_group}) {
