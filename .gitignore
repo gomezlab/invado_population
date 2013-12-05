@@ -5,6 +5,7 @@
 
 # /data/
 /data/*
+!/data/config
 
 # /src/
 /src/tmp
