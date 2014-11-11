@@ -12,12 +12,10 @@ use File::Path;
 use File::Spec::Functions;
 use File::Basename;
 use File::Copy;
-use Math::Matlab::Local;
 use Getopt::Long;
 use Data::Dumper;
 
 use Config::ImageSet qw(ParseConfig);
-use Math::Matlab::Extra;
 
 #Perl built-in variable that controls buffering print output, 1 turns off
 #buffering
@@ -88,8 +86,8 @@ foreach (@image_sets) {
 		if ($opt{debug}) {
 			print "$dir_command\n$copy_command\n";
 		} else {
-			eval($dir_command);
-			eval($copy_command);
+			mkpath(dirname($output_file));
+			copy($source_file,$output_file) or die "$!";
 		}
 	}
 }
