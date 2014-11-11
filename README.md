@@ -1,9 +1,13 @@
-invado_population
+Invadopodia Population Analysis
 =================
 
 Quantification of Invadopodia activity in cell populations
 
-This repository contains a set of MATLAB scripts designed to process images taken of metastatic cancer cells degrading labeled ECM. After finding and tracking individual cells, the system quantifies the amount of degradation underneath each cell over time. The system has automated systems for flat-field and photobleach correcting the labeled ECM images.
+This repository contains a set of MATLAB and Perl scripts designed to process images
+taken of metastatic cancer cells degrading labeled ECM. After finding and
+tracking individual cells, the system quantifies the amount of degradation
+underneath each cell over time. The system has automated systems for flat-field
+and photobleach correcting the labeled ECM images.
 
 Data Organization and Processing
 ================================
